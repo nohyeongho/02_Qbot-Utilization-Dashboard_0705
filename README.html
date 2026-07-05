@@ -1,1 +1,3002 @@
-# 01_Qbot-Utilization-Dashboard_0705
+<!DOCTYPE html>
+<html lang="ko" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>기술 챗봇 사용현황 대시보드 · 2026년 5월</title>
+    <style>
+        /* 
+           디자인 컨셉: LG 브랜드 아이덴티티 반영 및 대시보드 가독성 극대화
+           - LG 고유 색상인 버건디(#A50034)를 메인 브랜드 컬러로 지정
+           - 텍스트 가독성을 높이기 위해 Pretendard 폰트 시스템을 정밀 튜닝
+           - 미세한 트랜지션과 그림자(Glassmorphism 포함)를 통해 고급스러운 인터랙션 제공
+           - prefers-color-scheme를 이용한 완벽한 다크모드 대응
+        */
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css');
+
+        :root {
+            --bg: #F6F3EB;           /* LG v13 Warm Grey 1 배경 */
+            --card: #ffffff;
+            --ink: #1A1A1A;          /* LG v13 Dark Grey 3 텍스트 */
+            --mut: #7E7C77;          /* LG v13 Mid Grey 2 */
+            --line: #E6E1D6;         /* LG v13 Light Grey 3 */
+            --brand: #A50034;        /* LG Heritage Red */
+            --brand-dark: #7A0026;   
+            --brand-light: #FFF0F0;  
+            --accent: #FD312E;       /* LG Active Red */
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.2s ease-in-out;
+            --border-radius: 16px;   /* v13 가이드 라운딩 곡률 적용 */
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #1A1A1A;
+                --card: #262626;
+                --ink: #F0ECE4;
+                --mut: #CBC8C2;
+                --line: #333333;
+                --brand-light: #2d161a;
+                --shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+                --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Roboto', 'Pretendard', 'Malgun Gothic', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            color: var(--brand);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        a:hover {
+            color: var(--brand-dark);
+        }
+
+        /* 레이아웃 래퍼: 그리드 간격과 대칭성 보정 */
+        .wrap {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 32px 60px;
+        }
+
+        /* LG Way Survey 및 v13 풍의 화이트 플랫 헤더 */
+        .header {
+            background: var(--card);
+            border-bottom: 4px solid var(--brand); /* 아래로 이동 및 4px 보더 */
+            padding: 18px 32px;                   /* 패딩 최적화 */
+            border-radius: 0 0 16px 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* LG 로고 마크 형상화: 원형에 가까운 스퀘어로 정체성 표현 */
+        .logo-mark {
+            width: 48px;
+            height: 48px;
+            background: var(--brand);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -.5px;
+            box-shadow: 0 4px 12px rgba(165, 0, 52, 0.25);
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -.5px;
+            color: var(--ink);
+        }
+
+        .title-block .subtitle {
+            margin-top: 4px;
+            color: var(--mut);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* 헤더 우측 메타 데이터 정렬 */
+        .header-meta {
+            text-align: right;
+            color: var(--mut);
+            font-size: 13px;
+        }
+
+        .header-meta .date {
+            font-weight: 700;
+            color: var(--ink);
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        /* 메타 정보 칩 뱃지 그룹화 */
+        .meta-chips {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chip-badge {
+            background: var(--brand-light);
+            color: var(--brand);
+            border: 1px solid rgba(165, 0, 52, 0.15);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 내비게이션 탭: 모던 플로팅 탭 레이아웃 */
+        nav.tabs {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--line);
+            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.03);
+            margin-bottom: 16px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            nav.tabs {
+                background: rgba(17, 26, 46, 0.85);
+            }
+        }
+
+        nav.tabs .wrap {
+            padding: 0 32px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none; /* 파이어폭스용 */
+        }
+
+        nav.tabs .wrap::-webkit-scrollbar {
+            display: none; /* 크롬/사파리용 */
+        }
+
+        nav.tabs a {
+            padding: 14px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--mut);
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        nav.tabs a:hover {
+            color: var(--brand);
+        }
+
+        /* 대시보드 메인 섹션 */
+        section {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--line);
+            margin-top: 24px;
+            scroll-margin-top: 70px; /* 탭 헤더에 가려짐 방지 */
+        }
+
+        section h2 {
+            margin: 0 0 6px;
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--ink);
+        }
+
+        /* 왼쪽 데코레이션 선 (LG Way Survey 아이덴티티 이식) */
+        section h2::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background: var(--brand);
+            border-radius: 2px;
+        }
+
+        /* 숫자 넘버링 배지 제거 또는 세련되게 변경 */
+        section h2 .n {
+            background: var(--brand-light);
+            color: var(--brand);
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            margin-right: -4px;
+        }
+
+        .sec-sub {
+            color: var(--mut);
+            font-size: 13px;
+            margin: 0 0 20px 14px;
+            font-weight: 500;
+        }
+
+        /* KPI 요약 그리드 */
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin: 24px 0 8px;
+        }
+
+        /* KPI 카드: 액센트 바 및 세련된 그라데이션 */
+        .kpi {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .kpi:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+
+        /* 왼쪽 세로 액센트 라인 */
+        .kpi::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--kc, var(--brand));
+        }
+
+        .kpi-ic {
+            font-size: 20px;
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            opacity: 0.9;
+        }
+
+        .kpi-v {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--ink);
+            margin-top: 6px;
+        }
+
+        .kpi-l {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--mut);
+            margin-top: 4px;
+        }
+
+        .kpi-s {
+            font-size: 11px;
+            color: var(--mut);
+            margin-top: 4px;
+            opacity: 0.8;
+        }
+
+        /* 1등 혹은 메인 카드 강조 (그라데이션 배경) */
+        .kpi.primary-kpi {
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .kpi.primary-kpi::before {
+            display: none;
+        }
+
+        .kpi.primary-kpi .kpi-v {
+            color: #fff;
+        }
+
+        .kpi.primary-kpi .kpi-l,
+        .kpi.primary-kpi .kpi-s {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* 그리드 정의 */
+        .grid2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .grid3 {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 24px;
+        }
+
+        /* 차트 타이틀 */
+        .ctitle {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--ink);
+            margin: 0 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ctitle::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--brand);
+        }
+
+        .chart-svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: transparent;
+        }
+
+        .grid {
+            stroke: var(--line);
+            stroke-width: 1;
+        }
+
+        .ax {
+            fill: var(--mut);
+            font-size: 10px;
+            font-weight: 500;
+            font-family: inherit;
+        }
+
+        .ax-r {
+            text-anchor: end;
+        }
+
+        .ax-c {
+            text-anchor: middle;
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            justify-content: flex-end;
+        }
+
+        .lg {
+            font-size: 11px;
+            color: var(--mut);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lg i {
+            width: 12px;
+            height: 6px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        /* 가로형 막대그래프 (H-Bars) */
+        .hbars {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hb-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .hb-label {
+            font-size: 12px;
+            color: var(--ink);
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: right;
+        }
+
+        .hb-track {
+            position: relative;
+            background: var(--line);
+            border-radius: 8px;
+            height: 24px;
+            overflow: hidden;
+        }
+
+        .hb-fill {
+            height: 100%;
+            border-radius: 8px;
+            min-width: 4px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hb-val {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 10px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .hb-sub {
+            font-weight: 500;
+            opacity: 0.85;
+            font-size: 10px;
+        }
+
+        /* 도넛형 차트 */
+        .donut-wrap {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .donut-svg {
+            width: 180px;
+            height: 180px;
+            flex: 0 0 auto;
+        }
+
+        .donut-c1 {
+            text-anchor: middle;
+            font-size: 22px;
+            font-weight: 800;
+            fill: var(--ink);
+        }
+
+        .donut-c2 {
+            text-anchor: middle;
+            font-size: 11px;
+            fill: var(--mut);
+            font-weight: 500;
+        }
+
+        .dleg-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .dleg {
+            display: grid;
+            grid-template-columns: 14px 1fr auto auto;
+            gap: 8px;
+            align-items: center;
+            font-size: 12.5px;
+            padding: 6px 0;
+            border-bottom: 1px dashed var(--line);
+            color: var(--ink);
+        }
+
+        .dleg i {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .dleg b {
+            font-weight: 800;
+        }
+
+        .dleg em {
+            color: var(--mut);
+            font-style: normal;
+            font-size: 11.5px;
+            min-width: 48px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        /* 프리미엄 테이블 스타일 */
+        table.tbl {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+        }
+
+        table.tbl th {
+            background: var(--bg);
+            color: var(--ink);
+            font-weight: 800;
+            padding: 12px 10px;
+            text-align: right;
+            border-bottom: 2px solid var(--line);
+            position: sticky;
+            font-size: 12px;
+        }
+
+        table.tbl td {
+            padding: 11px 10px;
+            text-align: right;
+            border-bottom: 1px solid var(--line);
+            color: var(--ink);
+        }
+
+        table.tbl tr:last-child td {
+            border-bottom: none;
+        }
+
+        table.tbl td.tl,
+        table.tbl th.tl {
+            text-align: left;
+        }
+
+        table.tbl td.rk {
+            color: var(--mut);
+            font-weight: 800;
+            text-align: center;
+            width: 44px;
+        }
+
+        table.tbl td.sm {
+            font-size: 11.5px;
+            color: var(--mut);
+        }
+
+        table.tbl tr:hover td {
+            background: var(--brand-light);
+        }
+
+        /* 알약 뱃지 */
+        .pill {
+            background: var(--brand-light);
+            color: var(--brand);
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            border: 1px solid rgba(165, 0, 52, 0.1);
+            display: inline-block;
+        }
+
+        /* 요약 및 인사이트 박스: LG Way Survey의 소프트 핑크 콜아웃 스타일 */
+        .insight {
+            display: flex;
+            gap: 12px;
+            background: linear-gradient(135deg, var(--brand-light) 0%, rgba(255, 255, 255, 0.9) 100%);
+            border: 1px solid rgba(165, 0, 52, 0.15);
+            border-left: 4px solid var(--brand);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 20px;
+            font-size: 13.5px;
+            color: var(--ink);
+            align-items: flex-start;
+            box-shadow: var(--shadow-sm);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .insight {
+                background: linear-gradient(135deg, var(--brand-light) 0%, rgba(17, 26, 46, 0.9) 100%);
+            }
+        }
+
+        .insight b {
+            color: var(--brand);
+            font-weight: 800;
+        }
+
+        .ins-ic {
+            font-size: 18px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        /* 히트맵 컨테이너 */
+        .heat {
+            overflow-x: auto;
+        }
+
+        .heat-tbl {
+            border-collapse: collapse;
+            font-size: 10px;
+            width: 100%;
+            min-width: 640px;
+        }
+
+        .heat-tbl th {
+            color: var(--mut);
+            font-weight: 700;
+            padding: 6px;
+            text-align: center;
+        }
+
+        .heat-tbl th.heat-row {
+            color: var(--ink);
+            font-weight: 800;
+            text-align: right;
+            padding-right: 10px;
+            font-size: 11px;
+        }
+
+        .heat-tbl td {
+            padding: 0;
+            height: 28px;
+            text-align: center;
+            font-weight: 700;
+            border: 1.5px solid var(--card);
+            border-radius: 3px;
+        }
+
+        /* 퍼널 차트 스타일링 */
+        .funnel {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .fn-row {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fn-bar {
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            color: #fff;
+            font-weight: 700;
+            min-width: 180px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .fn-bar:hover {
+            transform: scale(1.01);
+        }
+
+        .fn-bar span {
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+
+        .fn-bar b {
+            font-size: 16px;
+            letter-spacing: -0.3px;
+        }
+
+        .fn-conv {
+            align-self: center;
+            color: var(--brand);
+            font-size: 12px;
+            font-weight: 800;
+            margin: 4px 0;
+            background: var(--brand-light);
+            padding: 2px 10px;
+            border-radius: 10px;
+        }
+
+        /* 개선 포인트 리스트 */
+        .imp {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--line);
+            align-items: flex-start;
+        }
+
+        .imp:last-child {
+            border-bottom: none;
+        }
+
+        .imp-n {
+            flex: 0 0 30px;
+            height: 30px;
+            background: var(--brand);
+            color: #fff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            box-shadow: 0 3px 8px rgba(165, 0, 52, 0.2);
+        }
+
+        .imp b {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--ink);
+        }
+
+        .imp p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: var(--mut);
+            font-weight: 500;
+        }
+
+        .muted {
+            color: var(--mut);
+            font-size: 13px;
+        }
+
+        /* 상단 셀렉트 행 */
+        .selrow {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .selrow select {
+            padding: 8px 16px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+            background: var(--card);
+            outline: none;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .selrow select:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(165, 0, 52, 0.1);
+        }
+
+        /* 조직 세부 요약 정보 (Org Detail) */
+        .orgdetail {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .od {
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 16px;
+            transition: var(--transition);
+        }
+
+        .od:hover {
+            border-color: var(--brand);
+        }
+
+        .od .v {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--brand);
+        }
+
+        .od .l {
+            font-size: 12px;
+            color: var(--mut);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--mut);
+            font-size: 12px;
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--line);
+            line-height: 1.8;
+            font-weight: 500;
+        }
+
+        /* 프리미엄 테이블 스타일링 (첨부2번 디자인 기반) */
+        .premium-tbl {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            background: var(--card);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--line);
+        }
+
+        .premium-tbl th {
+            background: #2D3748; /* 차콜 다크 헤더 */
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 14px 16px;
+            text-align: center;
+            letter-spacing: -0.2px;
+        }
+
+        .premium-tbl th.tl {
+            text-align: left;
+        }
+
+        .premium-tbl td {
+            padding: 12px 16px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--ink);
+            border-bottom: 1px solid var(--line);
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .premium-tbl td.tl {
+            text-align: left;
+        }
+
+        .premium-tbl tr:last-child td {
+            border-bottom: none;
+        }
+
+        .premium-tbl tr {
+            transition: var(--transition);
+        }
+
+        .premium-tbl tbody tr:hover {
+            background: var(--bg);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        /* 프로그레스 바 스타일 */
+        .prog-track {
+            background: #E2E8F0;
+            border-radius: 8px;
+            height: 16px;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+            vertical-align: middle;
+        }
+
+        .prog-fill {
+            height: 100%;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #ffffff;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 점유율 강도에 따른 프로그레스 바 색상 그라데이션 */
+        .prog-fill.high {
+            background: linear-gradient(90deg, #7A0026 0%, #A50034 100%);
+        }
+
+        .prog-fill.mid {
+            background: linear-gradient(90deg, #e67e22 0%, #f39c12 100%);
+        }
+
+        .prog-fill.low {
+            background: linear-gradient(90deg, #56CCF2 0%, #2F80ED 100%);
+        }
+
+        /* 둥근 도트 상태 배지 */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 700;
+            line-height: 1;
+            min-width: 90px;
+            border: 1px solid transparent;
+        }
+
+        .status-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* 상태별 디테일 설정 (첨부 2번 색감 반영) */
+        .status-badge.high {
+            background: rgba(165, 0, 52, 0.06);
+            color: #A50034;
+            border-color: rgba(165, 0, 52, 0.2);
+        }
+
+        .status-badge.high .dot {
+            background: #A50034;
+        }
+
+        .status-badge.mid {
+            background: rgba(230, 126, 34, 0.06);
+            color: #d35400;
+            border-color: rgba(230, 126, 34, 0.2);
+        }
+
+        .status-badge.mid .dot {
+            background: #e67e22;
+        }
+
+        .status-badge.low {
+            background: rgba(47, 128, 237, 0.06);
+            color: #2F80ED;
+            border-color: rgba(47, 128, 237, 0.2);
+        }
+
+        .status-badge.low .dot {
+            background: #2F80ED;
+        }
+
+        /* 미디어 쿼리: 디바이스별 스파이 튜닝 */
+        @media (max-width: 960px) {
+            .wrap {
+                padding: 0 20px 40px;
+            }
+
+            .header {
+                padding: 20px;
+                border-radius: 0;
+            }
+
+            .kpis {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .grid2,
+            .grid3 {
+                grid-template-columns: 1fr;
+            }
+
+            .premium-tbl th,
+            .premium-tbl td {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+
+            .status-badge {
+                padding: 3px 8px;
+                font-size: 10.5px;
+                min-width: 75px;
+            }
+
+            .orgdetail {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hb-row {
+                grid-template-columns: 110px 1fr;
+            }
+
+            nav.tabs .wrap {
+                padding: 0 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap" style="padding-bottom: 0; padding-top: 24px;">
+        <div class="header">
+            <div class="header-left">
+                <div class="logo-mark">LG</div>
+                <div class="title-block">
+                    <h1>기술 지원 챗봇 사용현황 대시보드</h1>
+                    <div class="subtitle">고객가치혁신 CC&amp;S · 현장 활용 로그 분석 · 누가 / 언제 / 얼마나 / 무엇을 / 어떻게</div>
+                    <div class="meta-chips">
+                        <span class="chip-badge">🗂️ 173,034 이벤트</span>
+                        <span class="chip-badge">👥 2,740 사용자</span>
+                        <span class="chip-badge">🏢 4 조직 · 109 센터</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-meta">
+                <div>분석 기간</div>
+                <div class="date">2026-05-01 ~ 2026-05-31</div>
+                <div style="margin-top:4px; font-weight:600;">CVI CC&amp;S Team</div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="tabs">
+        <div class="wrap">
+            <a href="#kpi">요약 KPI</a><a href="#user">사용자 분석</a><a href="#org">조직 분석</a>
+            <a href="#time">시간 분석</a><a href="#search">검색 분석</a><a href="#voc">VOC 분석</a>
+            <a href="#engage">참여·활성도</a><a href="#perf">성과·효율</a><a href="#quality">데이터 품질</a>
+            <a href="#summary">인사이트 요약</a>
+        </div>
+    </nav>
+
+    <div class="wrap">
+
+        <div class="kpis" id="kpi">
+            <div class="kpi" style="--kc:#A50034">
+                <div class="kpi-ic">👥</div>
+                <div class="kpi-v">2,740</div>
+                <div class="kpi-l">전체 사용자 (Unique)</div>
+                <div class="kpi-s">4개 조직 · 109개 센터</div>
+            </div>
+            <div class="kpi primary-kpi">
+                <div class="kpi-ic">⚡</div>
+                <div class="kpi-v">173,034</div>
+                <div class="kpi-l">총 이벤트 수</div>
+                <div class="kpi-s">2026-05-01 ~ 2026-05-31</div>
+            </div>
+            <div class="kpi" style="--kc:#7A0026">
+                <div class="kpi-ic">🔎</div>
+                <div class="kpi-v">52,270</div>
+                <div class="kpi-l">총 검색 수 (QUESTION)</div>
+                <div class="kpi-s">전체의 30.2%</div>
+            </div>
+            <div class="kpi" style="--kc:#5A5A5A">
+                <div class="kpi-ic">🖱️</div>
+                <div class="kpi-v">18,633</div>
+                <div class="kpi-l">링크 클릭 수</div>
+                <div class="kpi-s">답변 내 링크 클릭</div>
+            </div>
+            <div class="kpi" style="--kc:#2B2B2B">
+                <div class="kpi-ic">📊</div>
+                <div class="kpi-v">63.2</div>
+                <div class="kpi-l">1인당 평균 사용량</div>
+                <div class="kpi-s">검색 19.1건/인</div>
+            </div>
+            <div class="kpi primary-kpi">
+                <div class="kpi-ic">✅</div>
+                <div class="kpi-v">93.5%</div>
+                <div class="kpi-l">활성 사용자 비율</div>
+                <div class="kpi-s">검색 1회 이상 수행</div>
+            </div>
+            <div class="kpi" style="--kc:#7A0026">
+                <div class="kpi-ic">🔄</div>
+                <div class="kpi-v">35.6%</div>
+                <div class="kpi-l">검색→클릭 전환율</div>
+                <div class="kpi-s">클릭/검색</div>
+            </div>
+            <div class="kpi" style="--kc:#5A5A5A">
+                <div class="kpi-ic">🏆</div>
+                <div class="kpi-v">5.5%</div>
+                <div class="kpi-l">상위 10명 점유율</div>
+                <div class="kpi-s">전체 사용량 중</div>
+            </div>
+        </div>
+
+        <section id="user">
+            <h2><span class="n">1</span>사용자(인원) 분석</h2>
+            <p class="sec-sub">전체 사용자 수, 상위 사용자, 사용 강도 분포</p>
+            <div class="grid3">
+                <div>
+                    <div class="ctitle">상위 사용자 Top 10 (총 사용량)</div>
+                    <div class="hbars">
+                        <div class="hb-row">
+                            <div class="hb-label" title="정용우">정용우</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:100.0%;background:var(--brand)"></div><span
+                                    class="hb-val">2,500<span class="hb-sub"> (검색 867)</span></span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="서광">서광</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:73.1%;background:var(--brand)"></div><span
+                                    class="hb-val">1,828<span class="hb-sub"> (검색 641)</span></span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="장윤석">장윤석</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:61.5%;background:var(--brand)"></div><span
+                                    class="hb-val">1,537<span class="hb-sub"> (검색 536)</span></span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="김성원">김성원</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:32.0%;background:var(--brand)"></div><span
+                                    class="hb-val">800<span class="hb-sub"> (검색 291)</span></span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="한지수">한지수</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:25.7%;background:var(--brand)"></div><span
+                                    class="hb-val">642<span class="hb-sub"> (검색 185)</span></span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="노영호">노영호</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:23.9%;background:var(--brand)"></div><span
+                                    class="hb-val">598<span class="hb-sub"> (검색 194)</span></span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="김도균">김도균</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:18.0%;background:var(--brand)"></div><span
+                                    class="hb-val">450<span class="hb-sub"> (검색 142)</span></span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="김인성">김인성</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:17.8%;background:var(--brand)"></div><span
+                                    class="hb-val">446<span class="hb-sub"> (검색 144)</span></span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="김태한">김태한</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:16.9%;background:var(--brand)"></div><span
+                                    class="hb-val">423<span class="hb-sub"> (검색 132)</span></span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="이창원">이창원</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:15.1%;background:var(--brand)"></div><span
+                                    class="hb-val">377<span class="hb-sub"> (검색 115)</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="ctitle">사용자 분포 (헤비/미들/라이트)</div>
+                    <div class="donut-wrap"><svg viewBox="0 0 190 190" class="donut-svg">
+                            <circle cx="95.0" cy="95.0" r="78.0" fill="none" stroke="var(--line)" stroke-width="34" />
+                            <circle cx="95.0" cy="95.0" r="78.0" fill="none" stroke="#A50034" stroke-width="34"
+                                stroke-dasharray="98.38 391.71" stroke-dashoffset="0.00"
+                                transform="rotate(-90 95.0 95.0)">
+                                <title>헤비 (상위20%·97건↑): 550 (20.1%)</title>
+                            </circle>
+                            <circle cx="95.0" cy="95.0" r="78.0" fill="none" stroke="#7A0026" stroke-width="34"
+                                stroke-dasharray="147.56 342.53" stroke-dashoffset="-98.38"
+                                transform="rotate(-90 95.0 95.0)">
+                                <title>미들: 825 (30.1%)</title>
+                            </circle>
+                            <circle cx="95.0" cy="95.0" r="78.0" fill="none" stroke="#5A5A5A" stroke-width="34"
+                                stroke-dasharray="244.15 245.94" stroke-dashoffset="-245.94"
+                                transform="rotate(-90 95.0 95.0)">
+                                <title>라이트 (하위50%): 1,365 (49.8%)</title>
+                            </circle><text x="95.0" y="93.0" class="donut-c1">2,740</text><text x="95.0" y="111.0"
+                                class="donut-c2">합계</text>
+                        </svg>
+                        <div class="dleg-list">
+                            <div class="dleg"><i style="background:#A50034"></i><span>헤비
+                                    (상위20%·97건↑)</span><b>550</b><em>20.1%</em></div>
+                            <div class="dleg"><i style="background:#7A0026"></i><span>미들</span><b>825</b><em>30.1%</em>
+                            </div>
+                            <div class="dleg"><i style="background:#5A5A5A"></i><span>라이트
+                                    (하위50%)</span><b>1,365</b><em>49.8%</em></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:18px">
+                <div class="ctitle">상위 사용자 상세 (Top 15)</div>
+                <table class="tbl sortable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th class="tl">이름</th>
+                            <th class="tl">조직</th>
+                            <th>총 사용량</th>
+                            <th>검색</th>
+                            <th>클릭</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="rk">1</td>
+                            <td class="tl">정용우</td>
+                            <td class="tl sm">-</td>
+                            <td>2,500</td>
+                            <td>867</td>
+                            <td>186</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">2</td>
+                            <td class="tl">서광</td>
+                            <td class="tl sm">-</td>
+                            <td>1,828</td>
+                            <td>641</td>
+                            <td>463</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">3</td>
+                            <td class="tl">장윤석</td>
+                            <td class="tl sm">-</td>
+                            <td>1,537</td>
+                            <td>536</td>
+                            <td>340</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">4</td>
+                            <td class="tl">김성원</td>
+                            <td class="tl sm">-</td>
+                            <td>800</td>
+                            <td>291</td>
+                            <td>178</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">5</td>
+                            <td class="tl">한지수</td>
+                            <td class="tl sm">수도권중부담당</td>
+                            <td>642</td>
+                            <td>185</td>
+                            <td>132</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">6</td>
+                            <td class="tl">노영호</td>
+                            <td class="tl sm">-</td>
+                            <td>598</td>
+                            <td>194</td>
+                            <td>94</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">7</td>
+                            <td class="tl">김도균</td>
+                            <td class="tl sm">수도권중부담당</td>
+                            <td>450</td>
+                            <td>142</td>
+                            <td>61</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">8</td>
+                            <td class="tl">김인성</td>
+                            <td class="tl sm">수도권중부담당</td>
+                            <td>446</td>
+                            <td>144</td>
+                            <td>52</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">9</td>
+                            <td class="tl">김태한</td>
+                            <td class="tl sm">수도권중부담당</td>
+                            <td>423</td>
+                            <td>132</td>
+                            <td>39</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">10</td>
+                            <td class="tl">이창원</td>
+                            <td class="tl sm">수도권중부담당</td>
+                            <td>377</td>
+                            <td>115</td>
+                            <td>30</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">11</td>
+                            <td class="tl">조두연</td>
+                            <td class="tl sm">수도권중부담당</td>
+                            <td>369</td>
+                            <td>115</td>
+                            <td>58</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">12</td>
+                            <td class="tl">황재식</td>
+                            <td class="tl sm">수도권중부담당</td>
+                            <td>363</td>
+                            <td>118</td>
+                            <td>26</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">13</td>
+                            <td class="tl">송경민</td>
+                            <td class="tl sm">서남부담당</td>
+                            <td>354</td>
+                            <td>96</td>
+                            <td>54</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">14</td>
+                            <td class="tl">윤영욱</td>
+                            <td class="tl sm">수도권중부담당</td>
+                            <td>337</td>
+                            <td>107</td>
+                            <td>34</td>
+                        </tr>
+                        <tr>
+                            <td class="rk">15</td>
+                            <td class="tl">김영중</td>
+                            <td class="tl sm">수도권중부담당</td>
+                            <td>335</td>
+                            <td>113</td>
+                            <td>19</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="insight"><span class="ins-ic">💡</span>
+                <div>총 <b>2,740명</b>이 <b>173,034건</b>을 사용, 1인당 평균 <b>63.2건</b>. 상위 10명이 전체의 <b>5.5%</b>를 점유하고, 헤비 사용자
+                    <b>550명</b>(20%)에 사용량이 집중됩니다. 라이트 사용자 <b>1,365명</b>은 참여 확대 대상입니다.</div>
+            </div>
+        </section>
+
+        <section id="org">
+            <h2><span class="n">2</span>조직(팀/지역담당) 분석</h2>
+            <p class="sec-sub">조직별 사용량·참여율 비교 및 순위 · 상단 드롭다운으로 조직 선택</p>
+            <div class="selrow">
+                <label style="font-size:13px;font-weight:700;color:#334155">🔍 조직 선택</label>
+                <select id="orgSel">
+                    <option value="고객가치혁신한국수도권중부담당">고객가치혁신한국수도권중부담당</option>
+                    <option value="고객가치혁신한국서남부담당">고객가치혁신한국서남부담당</option>
+                    <option value="(미지정)">(미지정)</option>
+                    <option value="고객가치혁신한국충청실">고객가치혁신한국충청실</option>
+                    <option value="고객가치혁신한국강원실">고객가치혁신한국강원실</option>
+                </select>
+            </div>
+            <div class="orgdetail" style="margin-bottom:20px">
+                <div class="od">
+                    <div class="v" id="od_u">-</div>
+                    <div class="l">사용자 수</div>
+                </div>
+                <div class="od">
+                    <div class="v" id="od_t">-</div>
+                    <div class="l">총 사용량</div>
+                </div>
+                <div class="od">
+                    <div class="v" id="od_pu">-</div>
+                    <div class="l">1인당 사용량</div>
+                </div>
+                <div class="od">
+                    <div class="v" id="od_p">-</div>
+                    <div class="l">참여율</div>
+                </div>
+            </div>
+            <div class="grid2">
+                <div>
+                    <div class="ctitle">조직별 총 사용량</div>
+                    <div class="hbars">
+                        <div class="hb-row">
+                            <div class="hb-label" title="수도권중부">수도권중부</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:100.0%;background:#7A0026"></div><span
+                                    class="hb-val">73,438</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="서남부">서남부</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:83.4%;background:#7A0026"></div><span
+                                    class="hb-val">61,256</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="(미지정)">(미지정)</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:21.3%;background:#7A0026"></div><span
+                                    class="hb-val">15,665</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="충청">충청</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:20.6%;background:#7A0026"></div><span
+                                    class="hb-val">15,140</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="강원">강원</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:10.3%;background:#7A0026"></div><span
+                                    class="hb-val">7,535</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="ctitle">조직별 1인당 사용량 (효율)</div>
+                    <div class="hbars">
+                        <div class="hb-row">
+                            <div class="hb-label" title="강원">강원</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:100.0%;background:#2B2B2B"></div><span
+                                    class="hb-val">75건</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="서남부">서남부</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:85.9%;background:#2B2B2B"></div><span
+                                    class="hb-val">65건</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="수도권중부">수도권중부</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:82.6%;background:#2B2B2B"></div><span
+                                    class="hb-val">62건</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="(미지정)">(미지정)</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:81.5%;background:#2B2B2B"></div><span
+                                    class="hb-val">61건</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="충청">충청</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:78.0%;background:#2B2B2B"></div><span
+                                    class="hb-val">59건</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:18px">
+                <div class="ctitle">조직별 종합 지표 (열 클릭 시 정렬)</div>
+                <table class="tbl sortable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th class="tl">조직 (팀/지역담당)</th>
+                            <th>사용자</th>
+                            <th>총 사용량</th>
+                            <th>검색</th>
+                            <th>1인당</th>
+                            <th>1인당 검색</th>
+                            <th>참여율</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="rk">1</td>
+                            <td class="tl">고객가치혁신한국수도권중부담당</td>
+                            <td>1,180</td>
+                            <td>73,438</td>
+                            <td>22,357</td>
+                            <td>62.2</td>
+                            <td>18.9</td>
+                            <td><span class="pill">95.3%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="rk">2</td>
+                            <td class="tl">고객가치혁신한국서남부담당</td>
+                            <td>947</td>
+                            <td>61,256</td>
+                            <td>18,137</td>
+                            <td>64.7</td>
+                            <td>19.2</td>
+                            <td><span class="pill">96.4%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="rk">3</td>
+                            <td class="tl">(미지정)</td>
+                            <td>255</td>
+                            <td>15,665</td>
+                            <td>4,954</td>
+                            <td>61.4</td>
+                            <td>19.4</td>
+                            <td><span class="pill">72.2%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="rk">4</td>
+                            <td class="tl">고객가치혁신한국충청실</td>
+                            <td>258</td>
+                            <td>15,140</td>
+                            <td>4,482</td>
+                            <td>58.7</td>
+                            <td>17.4</td>
+                            <td><span class="pill">95.3%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="rk">5</td>
+                            <td class="tl">고객가치혁신한국강원실</td>
+                            <td>100</td>
+                            <td>7,535</td>
+                            <td>2,340</td>
+                            <td>75.3</td>
+                            <td>23.4</td>
+                            <td><span class="pill">95.0%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="insight"><span class="ins-ic">💡</span>
+                <div><b>고객가치혁신한국수도권중부담당</b>가 총 73,438건으로 사용량 1위이나, 1인당 효율은 <b>고객가치혁신한국강원실</b>가 75.3건으로 최고입니다. 참여율은
+                    <b>고객가치혁신한국서남부담당</b>가 96.4%로 가장 높습니다.</div>
+            </div>
+        </section>
+
+        <section id="time">
+            <h2><span class="n">3</span>시간 기반 분석</h2>
+            <p class="sec-sub">일별 추이 · 시간대 · 요일 · 피크 분석</p>
+            <div class="ctitle">일별 사용량 · 검색량 추이 (5월)</div>
+            <div class="legend"><span class="lg"><i style="background:#A50034"></i>총 사용량</span> <span class="lg"><i
+                        style="background:#2F80ED"></i>검색 수</span></div><svg viewBox="0 0 940 300" class="chart-svg"
+                preserveAspectRatio="none">
+                <line x1="48" y1="258.0" x2="922" y2="258.0" class="grid" /><text x="42" y="261.0"
+                    class="ax ax-r">0</text>
+                <line x1="48" y1="198.0" x2="922" y2="198.0" class="grid" /><text x="42" y="201.0"
+                    class="ax ax-r">2,602</text>
+                <line x1="48" y1="138.0" x2="922" y2="138.0" class="grid" /><text x="42" y="141.0"
+                    class="ax ax-r">5,204</text>
+                <line x1="48" y1="78.0" x2="922" y2="78.0" class="grid" /><text x="42" y="81.0"
+                    class="ax ax-r">7,805</text>
+                <line x1="48" y1="18.0" x2="922" y2="18.0" class="grid" /><text x="42" y="21.0"
+                    class="ax ax-r">10,407</text><text x="48.0" y="276" class="ax ax-c">05-01</text><text x="135.4"
+                    y="276" class="ax ax-c">05-04</text><text x="222.8" y="276" class="ax ax-c">05-07</text><text
+                    x="310.2" y="276" class="ax ax-c">05-10</text><text x="397.6" y="276"
+                    class="ax ax-c">05-13</text><text x="485.0" y="276" class="ax ax-c">05-16</text><text x="572.4"
+                    y="276" class="ax ax-c">05-19</text><text x="659.8" y="276" class="ax ax-c">05-22</text><text
+                    x="747.2" y="276" class="ax ax-c">05-25</text><text x="834.6" y="276"
+                    class="ax ax-c">05-28</text><text x="922.0" y="276" class="ax ax-c">05-31</text>
+                <path
+                    d="M 48.0,258.0 L 48.0,253.3 L 77.1,229.5 L 106.3,254.6 L 135.4,49.8 L 164.5,252.9 L 193.7,25.8 L 222.8,41.1 L 251.9,60.5 L 281.1,227.3 L 310.2,254.2 L 339.3,39.6 L 368.5,37.5 L 397.6,38.3 L 426.7,51.5 L 455.9,70.5 L 485.0,229.7 L 514.1,253.0 L 543.3,33.9 L 572.4,52.3 L 601.5,61.9 L 630.7,55.4 L 659.8,79.2 L 688.9,236.6 L 718.1,256.1 L 747.2,252.1 L 776.3,25.9 L 805.5,28.2 L 834.6,18.0 L 863.7,60.3 L 892.9,221.8 L 922.0,256.9 L 922.0,258.0 Z"
+                    fill="#A50034" opacity="0.07" />
+                <polyline
+                    points="48.0,253.3 77.1,229.5 106.3,254.6 135.4,49.8 164.5,252.9 193.7,25.8 222.8,41.1 251.9,60.5 281.1,227.3 310.2,254.2 339.3,39.6 368.5,37.5 397.6,38.3 426.7,51.5 455.9,70.5 485.0,229.7 514.1,253.0 543.3,33.9 572.4,52.3 601.5,61.9 630.7,55.4 659.8,79.2 688.9,236.6 718.1,256.1 747.2,252.1 776.3,25.9 805.5,28.2 834.6,18.0 863.7,60.3 892.9,221.8 922.0,256.9"
+                    fill="none" stroke="#A50034" stroke-width="2.5" stroke-linejoin="round" />
+                <circle cx="48.0" cy="253.3" r="2.6" fill="#A50034">
+                    <title>2026-05-01: 205</title>
+                </circle>
+                <circle cx="77.1" cy="229.5" r="2.6" fill="#A50034">
+                    <title>2026-05-02: 1,237</title>
+                </circle>
+                <circle cx="106.3" cy="254.6" r="2.6" fill="#A50034">
+                    <title>2026-05-03: 146</title>
+                </circle>
+                <circle cx="135.4" cy="49.8" r="2.6" fill="#A50034">
+                    <title>2026-05-04: 9,027</title>
+                </circle>
+                <circle cx="164.5" cy="252.9" r="2.6" fill="#A50034">
+                    <title>2026-05-05: 221</title>
+                </circle>
+                <circle cx="193.7" cy="25.8" r="2.6" fill="#A50034">
+                    <title>2026-05-06: 10,070</title>
+                </circle>
+                <circle cx="222.8" cy="41.1" r="2.6" fill="#A50034">
+                    <title>2026-05-07: 9,406</title>
+                </circle>
+                <circle cx="251.9" cy="60.5" r="2.6" fill="#A50034">
+                    <title>2026-05-08: 8,565</title>
+                </circle>
+                <circle cx="281.1" cy="227.3" r="2.6" fill="#A50034">
+                    <title>2026-05-09: 1,333</title>
+                </circle>
+                <circle cx="310.2" cy="254.2" r="2.6" fill="#A50034">
+                    <title>2026-05-10: 164</title>
+                </circle>
+                <circle cx="339.3" cy="39.6" r="2.6" fill="#A50034">
+                    <title>2026-05-11: 9,472</title>
+                </circle>
+                <circle cx="368.5" cy="37.5" r="2.6" fill="#A50034">
+                    <title>2026-05-12: 9,563</title>
+                </circle>
+                <circle cx="397.6" cy="38.3" r="2.6" fill="#A50034">
+                    <title>2026-05-13: 9,525</title>
+                </circle>
+                <circle cx="426.7" cy="51.5" r="2.6" fill="#A50034">
+                    <title>2026-05-14: 8,954</title>
+                </circle>
+                <circle cx="455.9" cy="70.5" r="2.6" fill="#A50034">
+                    <title>2026-05-15: 8,129</title>
+                </circle>
+                <circle cx="485.0" cy="229.7" r="2.6" fill="#A50034">
+                    <title>2026-05-16: 1,226</title>
+                </circle>
+                <circle cx="514.1" cy="253.0" r="2.6" fill="#A50034">
+                    <title>2026-05-17: 217</title>
+                </circle>
+                <circle cx="543.3" cy="33.9" r="2.6" fill="#A50034">
+                    <title>2026-05-18: 9,717</title>
+                </circle>
+                <circle cx="572.4" cy="52.3" r="2.6" fill="#A50034">
+                    <title>2026-05-19: 8,921</title>
+                </circle>
+                <circle cx="601.5" cy="61.9" r="2.6" fill="#A50034">
+                    <title>2026-05-20: 8,504</title>
+                </circle>
+                <circle cx="630.7" cy="55.4" r="2.6" fill="#A50034">
+                    <title>2026-05-21: 8,787</title>
+                </circle>
+                <circle cx="659.8" cy="79.2" r="2.6" fill="#A50034">
+                    <title>2026-05-22: 7,754</title>
+                </circle>
+                <circle cx="688.9" cy="236.6" r="2.6" fill="#A50034">
+                    <title>2026-05-23: 926</title>
+                </circle>
+                <circle cx="718.1" cy="256.1" r="2.6" fill="#A50034">
+                    <title>2026-05-24: 82</title>
+                </circle>
+                <circle cx="747.2" cy="252.1" r="2.6" fill="#A50034">
+                    <title>2026-05-25: 255</title>
+                </circle>
+                <circle cx="776.3" cy="25.9" r="2.6" fill="#A50034">
+                    <title>2026-05-26: 10,065</title>
+                </circle>
+                <circle cx="805.5" cy="28.2" r="2.6" fill="#A50034">
+                    <title>2026-05-27: 9,966</title>
+                </circle>
+                <circle cx="834.6" cy="18.0" r="2.6" fill="#A50034">
+                    <title>2026-05-28: 10,407</title>
+                </circle>
+                <circle cx="863.7" cy="60.3" r="2.6" fill="#A50034">
+                    <title>2026-05-29: 8,574</title>
+                </circle>
+                <circle cx="892.9" cy="221.8" r="2.6" fill="#A50034">
+                    <title>2026-05-30: 1,568</title>
+                </circle>
+                <circle cx="922.0" cy="256.9" r="2.6" fill="#A50034">
+                    <title>2026-05-31: 48</title>
+                </circle>
+                <path
+                    d="M 48.0,258.0 L 48.0,256.8 L 77.1,249.3 L 106.3,257.0 L 135.4,194.6 L 164.5,256.5 L 193.7,189.0 L 222.8,192.8 L 251.9,198.2 L 281.1,248.3 L 310.2,257.0 L 339.3,192.6 L 368.5,190.0 L 397.6,191.2 L 426.7,195.0 L 455.9,202.3 L 485.0,249.2 L 514.1,256.5 L 543.3,191.6 L 572.4,195.7 L 601.5,199.9 L 630.7,196.1 L 659.8,203.9 L 688.9,251.6 L 718.1,257.4 L 747.2,256.3 L 776.3,188.6 L 805.5,187.9 L 834.6,184.3 L 863.7,197.7 L 892.9,247.6 L 922.0,257.7 L 922.0,258.0 Z"
+                    fill="#2F80ED" opacity="0.07" />
+                <polyline
+                    points="48.0,256.8 77.1,249.3 106.3,257.0 135.4,194.6 164.5,256.5 193.7,189.0 222.8,192.8 251.9,198.2 281.1,248.3 310.2,257.0 339.3,192.6 368.5,190.0 397.6,191.2 426.7,195.0 455.9,202.3 485.0,249.2 514.1,256.5 543.3,191.6 572.4,195.7 601.5,199.9 630.7,196.1 659.8,203.9 688.9,251.6 718.1,257.4 747.2,256.3 776.3,188.6 805.5,187.9 834.6,184.3 863.7,197.7 892.9,247.6 922.0,257.7"
+                    fill="none" stroke="#2F80ED" stroke-width="2.5" stroke-linejoin="round" />
+                <circle cx="48.0" cy="256.8" r="2.6" fill="#2F80ED">
+                    <title>2026-05-01: 54</title>
+                </circle>
+                <circle cx="77.1" cy="249.3" r="2.6" fill="#2F80ED">
+                    <title>2026-05-02: 378</title>
+                </circle>
+                <circle cx="106.3" cy="257.0" r="2.6" fill="#2F80ED">
+                    <title>2026-05-03: 42</title>
+                </circle>
+                <circle cx="135.4" cy="194.6" r="2.6" fill="#2F80ED">
+                    <title>2026-05-04: 2,750</title>
+                </circle>
+                <circle cx="164.5" cy="256.5" r="2.6" fill="#2F80ED">
+                    <title>2026-05-05: 67</title>
+                </circle>
+                <circle cx="193.7" cy="189.0" r="2.6" fill="#2F80ED">
+                    <title>2026-05-06: 2,992</title>
+                </circle>
+                <circle cx="222.8" cy="192.8" r="2.6" fill="#2F80ED">
+                    <title>2026-05-07: 2,829</title>
+                </circle>
+                <circle cx="251.9" cy="198.2" r="2.6" fill="#2F80ED">
+                    <title>2026-05-08: 2,595</title>
+                </circle>
+                <circle cx="281.1" cy="248.3" r="2.6" fill="#2F80ED">
+                    <title>2026-05-09: 421</title>
+                </circle>
+                <circle cx="310.2" cy="257.0" r="2.6" fill="#2F80ED">
+                    <title>2026-05-10: 43</title>
+                </circle>
+                <circle cx="339.3" cy="192.6" r="2.6" fill="#2F80ED">
+                    <title>2026-05-11: 2,838</title>
+                </circle>
+                <circle cx="368.5" cy="190.0" r="2.6" fill="#2F80ED">
+                    <title>2026-05-12: 2,949</title>
+                </circle>
+                <circle cx="397.6" cy="191.2" r="2.6" fill="#2F80ED">
+                    <title>2026-05-13: 2,895</title>
+                </circle>
+                <circle cx="426.7" cy="195.0" r="2.6" fill="#2F80ED">
+                    <title>2026-05-14: 2,730</title>
+                </circle>
+                <circle cx="455.9" cy="202.3" r="2.6" fill="#2F80ED">
+                    <title>2026-05-15: 2,416</title>
+                </circle>
+                <circle cx="485.0" cy="249.2" r="2.6" fill="#2F80ED">
+                    <title>2026-05-16: 383</title>
+                </circle>
+                <circle cx="514.1" cy="256.5" r="2.6" fill="#2F80ED">
+                    <title>2026-05-17: 64</title>
+                </circle>
+                <circle cx="543.3" cy="191.6" r="2.6" fill="#2F80ED">
+                    <title>2026-05-18: 2,881</title>
+                </circle>
+                <circle cx="572.4" cy="195.7" r="2.6" fill="#2F80ED">
+                    <title>2026-05-19: 2,700</title>
+                </circle>
+                <circle cx="601.5" cy="199.9" r="2.6" fill="#2F80ED">
+                    <title>2026-05-20: 2,520</title>
+                </circle>
+                <circle cx="630.7" cy="196.1" r="2.6" fill="#2F80ED">
+                    <title>2026-05-21: 2,682</title>
+                </circle>
+                <circle cx="659.8" cy="203.9" r="2.6" fill="#2F80ED">
+                    <title>2026-05-22: 2,345</title>
+                </circle>
+                <circle cx="688.9" cy="251.6" r="2.6" fill="#2F80ED">
+                    <title>2026-05-23: 279</title>
+                </circle>
+                <circle cx="718.1" cy="257.4" r="2.6" fill="#2F80ED">
+                    <title>2026-05-24: 24</title>
+                </circle>
+                <circle cx="747.2" cy="256.3" r="2.6" fill="#2F80ED">
+                    <title>2026-05-25: 72</title>
+                </circle>
+                <circle cx="776.3" cy="188.6" r="2.6" fill="#2F80ED">
+                    <title>2026-05-26: 3,011</title>
+                </circle>
+                <circle cx="805.5" cy="187.9" r="2.6" fill="#2F80ED">
+                    <title>2026-05-27: 3,038</title>
+                </circle>
+                <circle cx="834.6" cy="184.3" r="2.6" fill="#2F80ED">
+                    <title>2026-05-28: 3,194</title>
+                </circle>
+                <circle cx="863.7" cy="197.7" r="2.6" fill="#2F80ED">
+                    <title>2026-05-29: 2,613</title>
+                </circle>
+                <circle cx="892.9" cy="247.6" r="2.6" fill="#2F80ED">
+                    <title>2026-05-30: 453</title>
+                </circle>
+                <circle cx="922.0" cy="257.7" r="2.6" fill="#2F80ED">
+                    <title>2026-05-31: 12</title>
+                </circle>
+            </svg>
+            <div class="grid2" style="margin-top:22px">
+                <div>
+                    <div class="ctitle">시간대별 사용량 (0~23시) · 피크 10시</div><svg viewBox="0 0 940 280" class="chart-svg"
+                        preserveAspectRatio="none">
+                        <line x1="44" y1="246.0" x2="930" y2="246.0" class="grid" /><text x="38" y="249.0"
+                            class="ax ax-r">0</text>
+                        <line x1="44" y1="188.0" x2="930" y2="188.0" class="grid" /><text x="38" y="191.0"
+                            class="ax ax-r">4,490</text>
+                        <line x1="44" y1="130.0" x2="930" y2="130.0" class="grid" /><text x="38" y="133.0"
+                            class="ax ax-r">8,980</text>
+                        <line x1="44" y1="72.0" x2="930" y2="72.0" class="grid" /><text x="38" y="75.0"
+                            class="ax ax-r">13,469</text>
+                        <line x1="44" y1="14.0" x2="930" y2="14.0" class="grid" /><text x="38" y="17.0"
+                            class="ax ax-r">17,959</text>
+                        <rect x="48.4" y="243.7" width="28.1" height="2.3" rx="2" fill="#0D9488">
+                            <title>0: 181</title>
+                        </rect><text x="62.5" y="262" class="ax ax-c">0</text>
+                        <rect x="85.3" y="245.2" width="28.1" height="0.8" rx="2" fill="#0D9488">
+                            <title>1: 60</title>
+                        </rect><text x="99.4" y="262" class="ax ax-c">1</text>
+                        <rect x="122.3" y="245.7" width="28.1" height="0.3" rx="2" fill="#0D9488">
+                            <title>2: 27</title>
+                        </rect><text x="136.3" y="262" class="ax ax-c">2</text>
+                        <rect x="159.2" y="245.7" width="28.1" height="0.3" rx="2" fill="#0D9488">
+                            <title>3: 22</title>
+                        </rect><text x="173.2" y="262" class="ax ax-c">3</text>
+                        <rect x="196.1" y="245.2" width="28.1" height="0.8" rx="2" fill="#0D9488">
+                            <title>4: 64</title>
+                        </rect><text x="210.1" y="262" class="ax ax-c">4</text>
+                        <rect x="233.0" y="244.6" width="28.1" height="1.4" rx="2" fill="#0D9488">
+                            <title>5: 107</title>
+                        </rect><text x="247.0" y="262" class="ax ax-c">5</text>
+                        <rect x="269.9" y="237.2" width="28.1" height="8.8" rx="2" fill="#0D9488">
+                            <title>6: 679</title>
+                        </rect><text x="284.0" y="262" class="ax ax-c">6</text>
+                        <rect x="306.8" y="214.1" width="28.1" height="31.9" rx="2" fill="#0D9488">
+                            <title>7: 2,468</title>
+                        </rect><text x="320.9" y="262" class="ax ax-c">7</text>
+                        <rect x="343.8" y="103.1" width="28.1" height="142.9" rx="2" fill="#0D9488">
+                            <title>8: 11,059</title>
+                        </rect><text x="357.8" y="262" class="ax ax-c">8</text>
+                        <rect x="380.7" y="47.6" width="28.1" height="198.4" rx="2" fill="#0D9488">
+                            <title>9: 15,359</title>
+                        </rect><text x="394.7" y="262" class="ax ax-c">9</text>
+                        <rect x="417.6" y="14.0" width="28.1" height="232.0" rx="2" fill="#A50034">
+                            <title>10: 17,959</title>
+                        </rect><text x="431.6" y="262" class="ax ax-c">10</text>
+                        <rect x="454.5" y="33.9" width="28.1" height="212.1" rx="2" fill="#0D9488">
+                            <title>11: 16,421</title>
+                        </rect><text x="468.5" y="262" class="ax ax-c">11</text>
+                        <rect x="491.4" y="88.9" width="28.1" height="157.1" rx="2" fill="#0D9488">
+                            <title>12: 12,159</title>
+                        </rect><text x="505.5" y="262" class="ax ax-c">12</text>
+                        <rect x="528.3" y="56.9" width="28.1" height="189.1" rx="2" fill="#0D9488">
+                            <title>13: 14,641</title>
+                        </rect><text x="542.4" y="262" class="ax ax-c">13</text>
+                        <rect x="565.3" y="35.4" width="28.1" height="210.6" rx="2" fill="#0D9488">
+                            <title>14: 16,300</title>
+                        </rect><text x="579.3" y="262" class="ax ax-c">14</text>
+                        <rect x="602.2" y="45.7" width="28.1" height="200.3" rx="2" fill="#0D9488">
+                            <title>15: 15,504</title>
+                        </rect><text x="616.2" y="262" class="ax ax-c">15</text>
+                        <rect x="639.1" y="34.3" width="28.1" height="211.7" rx="2" fill="#0D9488">
+                            <title>16: 16,388</title>
+                        </rect><text x="653.1" y="262" class="ax ax-c">16</text>
+                        <rect x="676.0" y="60.4" width="28.1" height="185.6" rx="2" fill="#0D9488">
+                            <title>17: 14,366</title>
+                        </rect><text x="690.0" y="262" class="ax ax-c">17</text>
+                        <rect x="712.9" y="125.3" width="28.1" height="120.7" rx="2" fill="#0D9488">
+                            <title>18: 9,341</title>
+                        </rect><text x="727.0" y="262" class="ax ax-c">18</text>
+                        <rect x="749.8" y="179.8" width="28.1" height="66.2" rx="2" fill="#0D9488">
+                            <title>19: 5,123</title>
+                        </rect><text x="763.9" y="262" class="ax ax-c">19</text>
+                        <rect x="786.8" y="219.2" width="28.1" height="26.8" rx="2" fill="#0D9488">
+                            <title>20: 2,076</title>
+                        </rect><text x="800.8" y="262" class="ax ax-c">20</text>
+                        <rect x="823.7" y="231.6" width="28.1" height="14.4" rx="2" fill="#0D9488">
+                            <title>21: 1,117</title>
+                        </rect><text x="837.7" y="262" class="ax ax-c">21</text>
+                        <rect x="860.6" y="233.3" width="28.1" height="12.7" rx="2" fill="#0D9488">
+                            <title>22: 985</title>
+                        </rect><text x="874.6" y="262" class="ax ax-c">22</text>
+                        <rect x="897.5" y="237.9" width="28.1" height="8.1" rx="2" fill="#0D9488">
+                            <title>23: 628</title>
+                        </rect><text x="911.5" y="262" class="ax ax-c">23</text>
+                    </svg>
+                </div>
+                <div>
+                    <div class="ctitle">요일별 사용량 · 최다 수요일</div><svg viewBox="0 0 940 240" class="chart-svg"
+                        preserveAspectRatio="none">
+                        <line x1="44" y1="206.0" x2="930" y2="206.0" class="grid" /><text x="38" y="209.0"
+                            class="ax ax-r">0</text>
+                        <line x1="44" y1="158.0" x2="930" y2="158.0" class="grid" /><text x="38" y="161.0"
+                            class="ax ax-r">9,516</text>
+                        <line x1="44" y1="110.0" x2="930" y2="110.0" class="grid" /><text x="38" y="113.0"
+                            class="ax ax-r">19,032</text>
+                        <line x1="44" y1="62.0" x2="930" y2="62.0" class="grid" /><text x="38" y="65.0"
+                            class="ax ax-r">28,549</text>
+                        <line x1="44" y1="14.0" x2="930" y2="14.0" class="grid" /><text x="38" y="17.0"
+                            class="ax ax-r">38,065</text>
+                        <rect x="59.2" y="62.4" width="96.2" height="143.6" rx="2" fill="#8B5CF6">
+                            <title>월: 28,471</title>
+                        </rect><text x="107.3" y="222" class="ax ax-c">월</text>
+                        <rect x="185.8" y="60.9" width="96.2" height="145.1" rx="2" fill="#8B5CF6">
+                            <title>화: 28,770</title>
+                        </rect><text x="233.9" y="222" class="ax ax-c">화</text>
+                        <rect x="312.3" y="14.0" width="96.2" height="192.0" rx="2" fill="#A50034">
+                            <title>수: 38,065</title>
+                        </rect><text x="360.4" y="222" class="ax ax-c">수</text>
+                        <rect x="438.9" y="16.6" width="96.2" height="189.4" rx="2" fill="#8B5CF6">
+                            <title>목: 37,554</title>
+                        </rect><text x="487.0" y="222" class="ax ax-c">목</text>
+                        <rect x="565.5" y="38.4" width="96.2" height="167.6" rx="2" fill="#8B5CF6">
+                            <title>금: 33,227</title>
+                        </rect><text x="613.6" y="222" class="ax ax-c">금</text>
+                        <rect x="692.0" y="174.3" width="96.2" height="31.7" rx="2" fill="#8B5CF6">
+                            <title>토: 6,290</title>
+                        </rect><text x="740.1" y="222" class="ax ax-c">토</text>
+                        <rect x="818.6" y="202.7" width="96.2" height="3.3" rx="2" fill="#8B5CF6">
+                            <title>일: 657</title>
+                        </rect><text x="866.7" y="222" class="ax ax-c">일</text>
+                    </svg>
+                </div>
+            </div>
+            <div style="margin-top:22px">
+                <div class="ctitle">요일 × 시간대 Heatmap (진할수록 사용 집중)</div>
+                <div class="heat">
+                    <table class="heat-tbl">
+                        <tr>
+                            <th></th>
+                            <th>0</th>
+                            <th>1</th>
+                            <th>2</th>
+                            <th>3</th>
+                            <th>4</th>
+                            <th>5</th>
+                            <th>6</th>
+                            <th>7</th>
+                            <th>8</th>
+                            <th>9</th>
+                            <th>10</th>
+                            <th>11</th>
+                            <th>12</th>
+                            <th>13</th>
+                            <th>14</th>
+                            <th>15</th>
+                            <th>16</th>
+                            <th>17</th>
+                            <th>18</th>
+                            <th>19</th>
+                            <th>20</th>
+                            <th>21</th>
+                            <th>22</th>
+                            <th>23</th>
+                        </tr>
+                        <tr>
+                            <th class="heat-row">월</th>
+                            <td style="background:rgb(222,240,253);color:#0f172a" title="월 0시: 24건">24</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="월 1시: 4건">4</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="월 2시: 2건">2</td>
+                            <td style="background:#f1f5f9;color:#0f172a" title="월 3시: 0건"></td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="월 4시: 6건">6</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="월 5시: 16건">16</td>
+                            <td style="background:rgb(219,238,250);color:#0f172a" title="월 6시: 90건">90</td>
+                            <td style="background:rgb(204,226,240);color:#0f172a" title="월 7시: 367건">367</td>
+                            <td style="background:rgb(120,159,183);color:#0f172a" title="월 8시: 1,946건">1,946</td>
+                            <td style="background:rgb(96,140,167);color:#fff" title="월 9시: 2,392건">2,392</td>
+                            <td style="background:rgb(81,128,156);color:#fff" title="월 10시: 2,677건">2,677</td>
+                            <td style="background:rgb(82,129,157);color:#fff" title="월 11시: 2,654건">2,654</td>
+                            <td style="background:rgb(115,156,180);color:#0f172a" title="월 12시: 2,027건">2,027</td>
+                            <td style="background:rgb(94,139,166);color:#fff" title="월 13시: 2,416건">2,416</td>
+                            <td style="background:rgb(89,135,162);color:#fff" title="월 14시: 2,521건">2,521</td>
+                            <td style="background:rgb(80,128,156);color:#fff" title="월 15시: 2,690건">2,690</td>
+                            <td style="background:rgb(72,121,150);color:#fff" title="월 16시: 2,844건">2,844</td>
+                            <td style="background:rgb(91,136,163);color:#fff" title="월 17시: 2,489건">2,489</td>
+                            <td style="background:rgb(144,179,200);color:#0f172a" title="월 18시: 1,482건">1,482</td>
+                            <td style="background:rgb(171,200,218);color:#0f172a" title="월 19시: 976건">976</td>
+                            <td style="background:rgb(203,226,240);color:#0f172a" title="월 20시: 377건">377</td>
+                            <td style="background:rgb(214,234,247);color:#0f172a" title="월 21시: 176건">176</td>
+                            <td style="background:rgb(215,235,248);color:#0f172a" title="월 22시: 153건">153</td>
+                            <td style="background:rgb(216,235,248);color:#0f172a" title="월 23시: 142건">142</td>
+                        </tr>
+                        <tr>
+                            <th class="heat-row">화</th>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="화 0시: 14건">14</td>
+                            <td style="background:rgb(222,240,253);color:#0f172a" title="화 1시: 27건">27</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="화 2시: 9건">9</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="화 3시: 8건">8</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="화 4시: 4건">4</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="화 5시: 5건">5</td>
+                            <td style="background:rgb(218,237,250);color:#0f172a" title="화 6시: 100건">100</td>
+                            <td style="background:rgb(203,225,240);color:#0f172a" title="화 7시: 383건">383</td>
+                            <td style="background:rgb(129,167,189);color:#0f172a" title="화 8시: 1,771건">1,771</td>
+                            <td style="background:rgb(98,142,169);color:#fff" title="화 9시: 2,341건">2,341</td>
+                            <td style="background:rgb(70,120,149);color:#fff" title="화 10시: 2,871건">2,871</td>
+                            <td style="background:rgb(87,133,161);color:#fff" title="화 11시: 2,558건">2,558</td>
+                            <td style="background:rgb(120,160,183);color:#0f172a" title="화 12시: 1,931건">1,931</td>
+                            <td style="background:rgb(90,136,163);color:#fff" title="화 13시: 2,497건">2,497</td>
+                            <td style="background:rgb(78,126,155);color:#fff" title="화 14시: 2,719건">2,719</td>
+                            <td style="background:rgb(92,138,164);color:#fff" title="화 15시: 2,457건">2,457</td>
+                            <td style="background:rgb(68,118,148);color:#fff" title="화 16시: 2,912건">2,912</td>
+                            <td style="background:rgb(93,138,165);color:#fff" title="화 17시: 2,440건">2,440</td>
+                            <td style="background:rgb(125,164,187);color:#0f172a" title="화 18시: 1,837건">1,837</td>
+                            <td style="background:rgb(174,202,220);color:#0f172a" title="화 19시: 923건">923</td>
+                            <td style="background:rgb(204,226,241);color:#0f172a" title="화 20시: 358건">358</td>
+                            <td style="background:rgb(211,232,245);color:#0f172a" title="화 21시: 226건">226</td>
+                            <td style="background:rgb(210,230,244);color:#0f172a" title="화 22시: 261건">261</td>
+                            <td style="background:rgb(217,237,249);color:#0f172a" title="화 23시: 118건">118</td>
+                        </tr>
+                        <tr>
+                            <th class="heat-row">수</th>
+                            <td style="background:rgb(220,239,251);color:#0f172a" title="수 0시: 59건">59</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="수 1시: 12건">12</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="수 2시: 4건">4</td>
+                            <td style="background:#f1f5f9;color:#0f172a" title="수 3시: 0건"></td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="수 4시: 4건">4</td>
+                            <td style="background:rgb(221,240,252);color:#0f172a" title="수 5시: 47건">47</td>
+                            <td style="background:rgb(216,235,248);color:#0f172a" title="수 6시: 147건">147</td>
+                            <td style="background:rgb(196,220,235);color:#0f172a" title="수 7시: 515건">515</td>
+                            <td style="background:rgb(100,144,170);color:#fff" title="수 8시: 2,306건">2,306</td>
+                            <td style="background:rgb(58,110,141);color:#fff" title="수 9시: 3,098건">3,098</td>
+                            <td style="background:rgb(15,76,112);color:#fff" title="수 10시: 3,904건">3,904</td>
+                            <td style="background:rgb(31,89,123);color:#fff" title="수 11시: 3,607건">3,607</td>
+                            <td style="background:rgb(96,140,167);color:#fff" title="수 12시: 2,389건">2,389</td>
+                            <td style="background:rgb(54,107,138);color:#fff" title="수 13시: 3,173건">3,173</td>
+                            <td style="background:rgb(12,74,110);color:#fff" title="수 14시: 3,970건">3,970</td>
+                            <td style="background:rgb(33,90,124);color:#fff" title="수 15시: 3,571건">3,571</td>
+                            <td style="background:rgb(23,83,118);color:#fff" title="수 16시: 3,747건">3,747</td>
+                            <td style="background:rgb(48,103,135);color:#fff" title="수 17시: 3,280건">3,280</td>
+                            <td style="background:rgb(111,153,177);color:#0f172a" title="수 18시: 2,101건">2,101</td>
+                            <td style="background:rgb(162,193,212);color:#0f172a" title="수 19시: 1,148건">1,148</td>
+                            <td style="background:rgb(199,222,237);color:#0f172a" title="수 20시: 450건">450</td>
+                            <td style="background:rgb(211,232,245);color:#0f172a" title="수 21시: 225건">225</td>
+                            <td style="background:rgb(213,233,246);color:#0f172a" title="수 22시: 193건">193</td>
+                            <td style="background:rgb(217,237,249);color:#0f172a" title="수 23시: 115건">115</td>
+                        </tr>
+                        <tr>
+                            <th class="heat-row">목</th>
+                            <td style="background:rgb(221,239,252);color:#0f172a" title="목 0시: 50건">50</td>
+                            <td style="background:#f1f5f9;color:#0f172a" title="목 1시: 0건"></td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="목 2시: 3건">3</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="목 3시: 10건">10</td>
+                            <td style="background:rgb(222,241,253);color:#0f172a" title="목 4시: 22건">22</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="목 5시: 10건">10</td>
+                            <td style="background:rgb(217,236,249);color:#0f172a" title="목 6시: 123건">123</td>
+                            <td style="background:rgb(194,218,234);color:#0f172a" title="목 7시: 548건">548</td>
+                            <td style="background:rgb(100,143,169);color:#fff" title="목 8시: 2,320건">2,320</td>
+                            <td style="background:rgb(50,104,136);color:#fff" title="목 9시: 3,242건">3,242</td>
+                            <td style="background:rgb(25,84,119);color:#fff" title="목 10시: 3,720건">3,720</td>
+                            <td style="background:rgb(37,94,127);color:#fff" title="목 11시: 3,493건">3,493</td>
+                            <td style="background:rgb(92,137,164);color:#fff" title="목 12시: 2,466건">2,466</td>
+                            <td style="background:rgb(43,98,131);color:#fff" title="목 13시: 3,384건">3,384</td>
+                            <td style="background:rgb(29,88,122);color:#fff" title="목 14시: 3,634건">3,634</td>
+                            <td style="background:rgb(39,95,128);color:#fff" title="목 15시: 3,455건">3,455</td>
+                            <td style="background:rgb(33,90,124);color:#fff" title="목 16시: 3,570건">3,570</td>
+                            <td style="background:rgb(42,98,130);color:#fff" title="목 17시: 3,400건">3,400</td>
+                            <td style="background:rgb(111,152,177);color:#0f172a" title="목 18시: 2,105건">2,105</td>
+                            <td style="background:rgb(168,197,216);color:#0f172a" title="목 19시: 1,042건">1,042</td>
+                            <td style="background:rgb(200,223,237);color:#0f172a" title="목 20시: 446건">446</td>
+                            <td style="background:rgb(213,233,247);color:#0f172a" title="목 21시: 191건">191</td>
+                            <td style="background:rgb(214,234,247);color:#0f172a" title="목 22시: 186건">186</td>
+                            <td style="background:rgb(216,236,249);color:#0f172a" title="목 23시: 134건">134</td>
+                        </tr>
+                        <tr>
+                            <th class="heat-row">금</th>
+                            <td style="background:rgb(222,241,253);color:#0f172a" title="금 0시: 20건">20</td>
+                            <td style="background:#f1f5f9;color:#0f172a" title="금 1시: 0건"></td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="금 2시: 9건">9</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="금 3시: 4건">4</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="금 4시: 14건">14</td>
+                            <td style="background:rgb(222,240,252);color:#0f172a" title="금 5시: 28건">28</td>
+                            <td style="background:rgb(215,235,248);color:#0f172a" title="금 6시: 154건">154</td>
+                            <td style="background:rgb(194,218,234);color:#0f172a" title="금 7시: 546건">546</td>
+                            <td style="background:rgb(117,157,181);color:#0f172a" title="금 8시: 1,992건">1,992</td>
+                            <td style="background:rgb(58,111,141);color:#fff" title="금 9시: 3,093건">3,093</td>
+                            <td style="background:rgb(27,86,120);color:#fff" title="금 10시: 3,684건">3,684</td>
+                            <td style="background:rgb(65,116,146);color:#fff" title="금 11시: 2,960건">2,960</td>
+                            <td style="background:rgb(93,138,165);color:#fff" title="금 12시: 2,452건">2,452</td>
+                            <td style="background:rgb(79,127,155);color:#fff" title="금 13시: 2,715건">2,715</td>
+                            <td style="background:rgb(56,109,140);color:#fff" title="금 14시: 3,135건">3,135</td>
+                            <td style="background:rgb(54,107,138);color:#fff" title="금 15시: 3,181건">3,181</td>
+                            <td style="background:rgb(55,108,139);color:#fff" title="금 16시: 3,156건">3,156</td>
+                            <td style="background:rgb(80,128,156);color:#fff" title="금 17시: 2,687건">2,687</td>
+                            <td style="background:rgb(130,167,190);color:#0f172a" title="금 18시: 1,753건">1,753</td>
+                            <td style="background:rgb(174,202,220);color:#0f172a" title="금 19시: 935건">935</td>
+                            <td style="background:rgb(205,227,241);color:#0f172a" title="금 20시: 353건">353</td>
+                            <td style="background:rgb(214,234,247);color:#0f172a" title="금 21시: 185건">185</td>
+                            <td style="background:rgb(217,236,249);color:#0f172a" title="금 22시: 123건">123</td>
+                            <td style="background:rgb(221,239,252);color:#0f172a" title="금 23시: 48건">48</td>
+                        </tr>
+                        <tr>
+                            <th class="heat-row">토</th>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="토 0시: 14건">14</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="토 1시: 7건">7</td>
+                            <td style="background:#f1f5f9;color:#0f172a" title="토 2시: 0건"></td>
+                            <td style="background:#f1f5f9;color:#0f172a" title="토 3시: 0건"></td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="토 4시: 3건">3</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="토 5시: 1건">1</td>
+                            <td style="background:rgb(221,239,251);color:#0f172a" title="토 6시: 56건">56</td>
+                            <td style="background:rgb(218,237,250);color:#0f172a" title="토 7시: 105건">105</td>
+                            <td style="background:rgb(186,212,228);color:#0f172a" title="토 8시: 696건">696</td>
+                            <td style="background:rgb(161,192,211);color:#0f172a" title="토 9시: 1,170건">1,170</td>
+                            <td style="background:rgb(166,196,214);color:#0f172a" title="토 10시: 1,082건">1,082</td>
+                            <td style="background:rgb(164,194,213);color:#0f172a" title="토 11시: 1,123건">1,123</td>
+                            <td style="background:rgb(177,205,222);color:#0f172a" title="토 12시: 871건">871</td>
+                            <td style="background:rgb(201,224,239);color:#0f172a" title="토 13시: 412건">412</td>
+                            <td style="background:rgb(208,229,243);color:#0f172a" title="토 14시: 294건">294</td>
+                            <td style="background:rgb(218,237,249);color:#0f172a" title="토 15시: 112건">112</td>
+                            <td style="background:rgb(216,236,249);color:#0f172a" title="토 16시: 132건">132</td>
+                            <td style="background:rgb(221,240,252);color:#0f172a" title="토 17시: 40건">40</td>
+                            <td style="background:rgb(221,240,252);color:#0f172a" title="토 18시: 39건">39</td>
+                            <td style="background:rgb(220,239,251);color:#0f172a" title="토 19시: 57건">57</td>
+                            <td style="background:rgb(222,241,253);color:#0f172a" title="토 20시: 19건">19</td>
+                            <td style="background:rgb(222,240,253);color:#0f172a" title="토 21시: 26건">26</td>
+                            <td style="background:rgb(222,240,252);color:#0f172a" title="토 22시: 31건">31</td>
+                            <td style="background:#f1f5f9;color:#0f172a" title="토 23시: 0건"></td>
+                        </tr>
+                        <tr>
+                            <th class="heat-row">일</th>
+                            <td style="background:#f1f5f9;color:#0f172a" title="일 0시: 0건"></td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="일 1시: 10건">10</td>
+                            <td style="background:#f1f5f9;color:#0f172a" title="일 2시: 0건"></td>
+                            <td style="background:#f1f5f9;color:#0f172a" title="일 3시: 0건"></td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="일 4시: 11건">11</td>
+                            <td style="background:#f1f5f9;color:#0f172a" title="일 5시: 0건"></td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="일 6시: 9건">9</td>
+                            <td style="background:rgb(223,241,253);color:#0f172a" title="일 7시: 4건">4</td>
+                            <td style="background:rgb(222,240,252);color:#0f172a" title="일 8시: 28건">28</td>
+                            <td style="background:rgb(222,241,253);color:#0f172a" title="일 9시: 23건">23</td>
+                            <td style="background:rgb(222,241,253);color:#0f172a" title="일 10시: 21건">21</td>
+                            <td style="background:rgb(222,240,253);color:#0f172a" title="일 11시: 26건">26</td>
+                            <td style="background:rgb(222,241,253);color:#0f172a" title="일 12시: 23건">23</td>
+                            <td style="background:rgb(221,240,252);color:#0f172a" title="일 13시: 44건">44</td>
+                            <td style="background:rgb(222,240,253);color:#0f172a" title="일 14시: 27건">27</td>
+                            <td style="background:rgb(221,240,252);color:#0f172a" title="일 15시: 38건">38</td>
+                            <td style="background:rgb(222,240,253);color:#0f172a" title="일 16시: 27건">27</td>
+                            <td style="background:rgb(222,240,252);color:#0f172a" title="일 17시: 30건">30</td>
+                            <td style="background:rgb(222,240,253);color:#0f172a" title="일 18시: 24건">24</td>
+                            <td style="background:rgb(221,240,252);color:#0f172a" title="일 19시: 42건">42</td>
+                            <td style="background:rgb(220,238,251);color:#0f172a" title="일 20시: 73건">73</td>
+                            <td style="background:rgb(219,238,250);color:#0f172a" title="일 21시: 88건">88</td>
+                            <td style="background:rgb(221,240,252);color:#0f172a" title="일 22시: 38건">38</td>
+                            <td style="background:rgb(220,238,251);color:#0f172a" title="일 23시: 71건">71</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="insight"><span class="ins-ic">💡</span>
+                <div><b>오전 10시</b>가 피크(17,959건), 새벽 3시가 최저입니다. 요일은 <b>수요일</b>(38,065건)에 사용이 집중되며, 업무시간(9~17시) 중심의 현장 활용
+                    패턴을 보입니다.</div>
+            </div>
+        </section>
+
+        <section id="search">
+            <h2><span class="n">4</span>검색(질문) 분석</h2>
+            <p class="sec-sub">검색량 · 검색 비율 · 질문 유형 분포</p>
+            <div class="grid2">
+                <div>
+                    <div class="ctitle">질문 유형(questionType) Top 10</div>
+                    <table class="premium-tbl">
+                        <thead>
+                            <tr>
+                                <th class="tl">질문 유형</th>
+                                <th>점유율</th>
+                                <th style="width: 35%;">비율</th>
+                                <th>건수</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="tl">UNIFIED_TECH</td>
+                                <td>50.1%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill high" style="width:50.1%">50.1%</div>
+                                    </div>
+                                </td>
+                                <td>53,860</td>
+                                <td><span class="status-badge high"><span class="dot"></span>주요 질문</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">MODEL_SYMPTOM</td>
+                                <td>43.5%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill high" style="width:43.5%">43.5%</div>
+                                    </div>
+                                </td>
+                                <td>46,848</td>
+                                <td><span class="status-badge high"><span class="dot"></span>주요 질문</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">TECH_LOOKUP</td>
+                                <td>2.4%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill mid" style="width:2.4%">2.4%</div>
+                                    </div>
+                                </td>
+                                <td>2,530</td>
+                                <td><span class="status-badge mid"><span class="dot"></span>일반 질문</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">IMAGE</td>
+                                <td>1.4%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:1.4%">1.4%</div>
+                                    </div>
+                                </td>
+                                <td>1,558</td>
+                                <td><span class="status-badge low"><span class="dot"></span>단발 질문</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">SPEC_INFO</td>
+                                <td>0.9%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:0.9%">0.9%</div>
+                                    </div>
+                                </td>
+                                <td>1,014</td>
+                                <td><span class="status-badge low"><span class="dot"></span>단발 질문</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">PC_UNLOCK</td>
+                                <td>0.5%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:0.5%">0.5%</div>
+                                    </div>
+                                </td>
+                                <td>526</td>
+                                <td><span class="status-badge low"><span class="dot"></span>단발 질문</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">UNIFIED_CS</td>
+                                <td>0.5%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:0.5%">0.5%</div>
+                                    </div>
+                                </td>
+                                <td>524</td>
+                                <td><span class="status-badge low"><span class="dot"></span>단발 질문</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">SVC_MANUAL</td>
+                                <td>0.3%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:0.3%">0.3%</div>
+                                    </div>
+                                </td>
+                                <td>284</td>
+                                <td><span class="status-badge low"><span class="dot"></span>단발 질문</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">SM_WORK_GUIDE</td>
+                                <td>0.3%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:0.3%">0.3%</div>
+                                    </div>
+                                </td>
+                                <td>272</td>
+                                <td><span class="status-badge low"><span class="dot"></span>단발 질문</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">LOCKRING_SEARCH</td>
+                                <td>0.2%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:0.2%">0.2%</div>
+                                    </div>
+                                </td>
+                                <td>186</td>
+                                <td><span class="status-badge low"><span class="dot"></span>단발 질문</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <div class="ctitle">제품군(제품 Lv2) Top 15</div>
+                    <table class="premium-tbl">
+                        <thead>
+                            <tr>
+                                <th class="tl">제품군</th>
+                                <th>점유율</th>
+                                <th style="width: 35%;">비율</th>
+                                <th>건수</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="tl">세탁기</td>
+                                <td>13.1%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill high" style="width:13.1%">13.1%</div>
+                                    </div>
+                                </td>
+                                <td>1,948</td>
+                                <td><span class="status-badge high"><span class="dot"></span>핵심 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">냉장고</td>
+                                <td>12.6%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill high" style="width:12.6%">12.6%</div>
+                                    </div>
+                                </td>
+                                <td>1,869</td>
+                                <td><span class="status-badge high"><span class="dot"></span>핵심 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">정수기</td>
+                                <td>11.3%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill high" style="width:11.3%">11.3%</div>
+                                    </div>
+                                </td>
+                                <td>1,687</td>
+                                <td><span class="status-badge high"><span class="dot"></span>핵심 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">에어컨</td>
+                                <td>10.3%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill high" style="width:10.3%">10.3%</div>
+                                    </div>
+                                </td>
+                                <td>1,533</td>
+                                <td><span class="status-badge high"><span class="dot"></span>핵심 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">TV</td>
+                                <td>7.8%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill mid" style="width:7.8%">7.8%</div>
+                                    </div>
+                                </td>
+                                <td>1,163</td>
+                                <td><span class="status-badge mid"><span class="dot"></span>주요 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">시스템 에어컨</td>
+                                <td>6.2%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill mid" style="width:6.2%">6.2%</div>
+                                    </div>
+                                </td>
+                                <td>918</td>
+                                <td><span class="status-badge mid"><span class="dot"></span>주요 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">식기세척기</td>
+                                <td>5.6%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill mid" style="width:5.6%">5.6%</div>
+                                    </div>
+                                </td>
+                                <td>827</td>
+                                <td><span class="status-badge mid"><span class="dot"></span>주요 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">의류건조기</td>
+                                <td>4.8%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:4.8%">4.8%</div>
+                                    </div>
+                                </td>
+                                <td>714</td>
+                                <td><span class="status-badge low"><span class="dot"></span>일반 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">청소기</td>
+                                <td>4.8%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:4.8%">4.8%</div>
+                                    </div>
+                                </td>
+                                <td>712</td>
+                                <td><span class="status-badge low"><span class="dot"></span>일반 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">스타일러</td>
+                                <td>3.7%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:3.7%">3.7%</div>
+                                    </div>
+                                </td>
+                                <td>544</td>
+                                <td><span class="status-badge low"><span class="dot"></span>일반 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">워시타워</td>
+                                <td>3.5%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:3.5%">3.5%</div>
+                                    </div>
+                                </td>
+                                <td>520</td>
+                                <td><span class="status-badge low"><span class="dot"></span>일반 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">제습/가습기</td>
+                                <td>2.4%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:2.4%">2.4%</div>
+                                    </div>
+                                </td>
+                                <td>354</td>
+                                <td><span class="status-badge low"><span class="dot"></span>일반 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">김치냉장고</td>
+                                <td>2.3%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:2.3%">2.3%</div>
+                                    </div>
+                                </td>
+                                <td>339</td>
+                                <td><span class="status-badge low"><span class="dot"></span>일반 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">공기청정기</td>
+                                <td>2.2%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:2.2%">2.2%</div>
+                                    </div>
+                                </td>
+                                <td>324</td>
+                                <td><span class="status-badge low"><span class="dot"></span>일반 제품</span></td>
+                            </tr>
+                            <tr>
+                                <td class="tl">노트북</td>
+                                <td>2.1%</td>
+                                <td>
+                                    <div class="prog-track">
+                                        <div class="prog-fill low" style="width:2.1%">2.1%</div>
+                                    </div>
+                                </td>
+                                <td>311</td>
+                                <td><span class="status-badge low"><span class="dot"></span>일반 제품</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="insight"><span class="ins-ic">💡</span>
+                <div>총 검색 <b>52,270건</b>, 전체 이벤트의 <b>30.2%</b>가 검색 행동입니다. 1인당 평균 <b>19.1건</b>을 검색했습니다.</div>
+            </div>
+        </section>
+
+        <section id="voc">
+            <h2><span class="n">5</span>텍스트(VOC) 분석</h2>
+            <p class="sec-sub">검색어 다빈도 키워드 및 증상 유형 분류 (QUESTION 원문 기준)</p>
+            <div class="grid3">
+                <div>
+                    <div class="ctitle">다빈도 키워드 Top 20</div>
+                    <div class="hbars">
+                        <div class="hb-row">
+                            <div class="hb-label" title="AKOR">AKOR</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:100.0%;background:var(--brand)"></div><span
+                                    class="hb-val">19,748</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="안됨">안됨</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:18.9%;background:var(--brand)"></div><span
+                                    class="hb-val">3,726</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="표시">표시</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:10.9%;background:var(--brand)"></div><span
+                                    class="hb-val">2,146</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="나옴">나옴</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:9.3%;background:var(--brand)"></div><span
+                                    class="hb-val">1,827</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="전원">전원</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:8.8%;background:var(--brand)"></div><span
+                                    class="hb-val">1,741</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="소음">소음</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:8.1%;background:var(--brand)"></div><span
+                                    class="hb-val">1,598</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="사전점검">사전점검</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:7.4%;background:var(--brand)"></div><span
+                                    class="hb-val">1,457</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="AKM">AKM</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:7.1%;background:var(--brand)"></div><span
+                                    class="hb-val">1,396</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="CKOR">CKOR</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:6.4%;background:var(--brand)"></div><span
+                                    class="hb-val">1,256</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="기타">기타</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:6.3%;background:var(--brand)"></div><span
+                                    class="hb-val">1,250</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="켜짐">켜짐</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:5.9%;background:var(--brand)"></div><span
+                                    class="hb-val">1,162</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="화면">화면</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:5.6%;background:var(--brand)"></div><span
+                                    class="hb-val">1,112</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="얼음">얼음</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:5.5%;background:var(--brand)"></div><span
+                                    class="hb-val">1,079</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="에러">에러</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:4.7%;background:var(--brand)"></div><span
+                                    class="hb-val">936</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="에어컨">에어컨</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:4.5%;background:var(--brand)"></div><span
+                                    class="hb-val">882</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="냉장고">냉장고</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:4.3%;background:var(--brand)"></div><span
+                                    class="hb-val">842</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="냉동">냉동</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:4.1%;background:var(--brand)"></div><span
+                                    class="hb-val">809</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="도어">도어</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:4.0%;background:var(--brand)"></div><span
+                                    class="hb-val">797</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="냉장">냉장</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:3.8%;background:var(--brand)"></div><span
+                                    class="hb-val">743</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="냉방">냉방</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:3.7%;background:var(--brand)"></div><span
+                                    class="hb-val">736</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="ctitle">증상 유형 분류</div>
+                    <div class="donut-wrap"><svg viewBox="0 0 210 210" class="donut-svg">
+                            <circle cx="105.0" cy="105.0" r="86.0" fill="none" stroke="var(--line)" stroke-width="38" />
+                            <circle cx="105.0" cy="105.0" r="86.0" fill="none" stroke="#A50034" stroke-width="38"
+                                stroke-dasharray="307.85 232.50" stroke-dashoffset="0.00"
+                                transform="rotate(-90 105.0 105.0)">
+                                <title>기타/일반문의: 31,641 (57.0%)</title>
+                            </circle>
+                            <circle cx="105.0" cy="105.0" r="86.0" fill="none" stroke="#2F80ED" stroke-width="38"
+                                stroke-dasharray="57.92 482.43" stroke-dashoffset="-307.85"
+                                transform="rotate(-90 105.0 105.0)">
+                                <title>에러/오류: 5,953 (10.7%)</title>
+                            </circle>
+                            <circle cx="105.0" cy="105.0" r="86.0" fill="none" stroke="#E67E22" stroke-width="38"
+                                stroke-dasharray="44.37 495.99" stroke-dashoffset="-365.78"
+                                transform="rotate(-90 105.0 105.0)">
+                                <title>작동/안됨: 4,560 (8.2%)</title>
+                            </circle>
+                            <circle cx="105.0" cy="105.0" r="86.0" fill="none" stroke="#8B5CF6" stroke-width="38"
+                                stroke-dasharray="35.13 505.22" stroke-dashoffset="-410.14"
+                                transform="rotate(-90 105.0 105.0)">
+                                <title>온도/냉각: 3,611 (6.5%)</title>
+                            </circle>
+                            <circle cx="105.0" cy="105.0" r="86.0" fill="none" stroke="#10B981" stroke-width="38"
+                                stroke-dasharray="30.15 510.20" stroke-dashoffset="-445.28"
+                                transform="rotate(-90 105.0 105.0)">
+                                <title>표시/램프: 3,099 (5.6%)</title>
+                            </circle>
+                            <circle cx="105.0" cy="105.0" r="86.0" fill="none" stroke="#34495E" stroke-width="38"
+                                stroke-dasharray="21.85 518.50" stroke-dashoffset="-475.43"
+                                transform="rotate(-90 105.0 105.0)">
+                                <title>소음/진동: 2,246 (4.0%)</title>
+                            </circle>
+                            <circle cx="105.0" cy="105.0" r="86.0" fill="none" stroke="#F1C40F" stroke-width="38"
+                                stroke-dasharray="20.22 520.14" stroke-dashoffset="-497.28"
+                                transform="rotate(-90 105.0 105.0)">
+                                <title>전원: 2,078 (3.7%)</title>
+                            </circle>
+                            <circle cx="105.0" cy="105.0" r="86.0" fill="none" stroke="#00BCD4" stroke-width="38"
+                                stroke-dasharray="20.02 520.33" stroke-dashoffset="-517.50"
+                                transform="rotate(-90 105.0 105.0)">
+                                <title>누수/물: 2,058 (3.7%)</title>
+                            </circle>
+                            <circle cx="105.0" cy="105.0" r="86.0" fill="none" stroke="#7F8C8D" stroke-width="38"
+                                stroke-dasharray="2.83 537.52" stroke-dashoffset="-537.52"
+                                transform="rotate(-90 105.0 105.0)">
+                                <title>냄새: 291 (0.5%)</title>
+                            </circle><text x="105.0" y="103.0" class="donut-c1">55,537</text><text x="105.0" y="121.0"
+                                class="donut-c2">합계</text>
+                        </svg>
+                        <div class="dleg-list">
+                            <div class="dleg"><i
+                                    style="background:#A50034"></i><span>기타/일반문의</span><b>31,641</b><em>57.0%</em></div>
+                            <div class="dleg"><i
+                                    style="background:#2F80ED"></i><span>에러/오류</span><b>5,953</b><em>10.7%</em></div>
+                            <div class="dleg"><i
+                                    style="background:#E67E22"></i><span>작동/안됨</span><b>4,560</b><em>8.2%</em></div>
+                            <div class="dleg"><i
+                                    style="background:#8B5CF6"></i><span>온도/냉각</span><b>3,611</b><em>6.5%</em></div>
+                            <div class="dleg"><i
+                                    style="background:#10B981"></i><span>표시/램프</span><b>3,099</b><em>5.6%</em></div>
+                            <div class="dleg"><i
+                                    style="background:#34495E"></i><span>소음/진동</span><b>2,246</b><em>4.0%</em></div>
+                            <div class="dleg"><i style="background:#F1C40F"></i><span>전원</span><b>2,078</b><em>3.7%</em>
+                            </div>
+                            <div class="dleg"><i
+                                    style="background:#00BCD4"></i><span>누수/물</span><b>2,058</b><em>3.7%</em></div>
+                            <div class="dleg"><i style="background:#7F8C8D"></i><span>냄새</span><b>291</b><em>0.5%</em>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="insight"><span class="ins-ic">💡</span>
+                <div>질문 유형은 <b>모델·증상 조회(MODEL_SYMPTOM)</b>와 <b>통합기술(UNIFIED_TECH)</b>이 대부분을 차지합니다. 증상 키워드는
+                    <b>에러/오류(5,953)</b>, <b>작동/안됨(4,560)</b>, <b>온도/냉각(3,611)</b> 순으로 많아 관련 기술자료·FAQ 보강이 효과적입니다.
+                    (AKOR·AKM·CKOR 등은 제품 모델코드 접두어)</div>
+            </div>
+        </section>
+
+        <section id="engage">
+            <h2><span class="n">6</span>참여도 / 활성도 분석</h2>
+            <p class="sec-sub">활성·비활성 사용자 및 조직별 참여율</p>
+            <div class="grid3">
+                <div>
+                    <div class="ctitle">활성 / 비활성 사용자</div>
+                    <div class="donut-wrap"><svg viewBox="0 0 190 190" class="donut-svg">
+                            <circle cx="95.0" cy="95.0" r="78.0" fill="none" stroke="var(--line)" stroke-width="34" />
+                            <circle cx="95.0" cy="95.0" r="78.0" fill="none" stroke="#2F80ED" stroke-width="34"
+                                stroke-dasharray="458.25 31.84" stroke-dashoffset="0.00"
+                                transform="rotate(-90 95.0 95.0)">
+                                <title>활성 (검색 수행): 2,562 (93.5%)</title>
+                            </circle>
+                            <circle cx="95.0" cy="95.0" r="78.0" fill="none" stroke="#E2E8F0" stroke-width="34"
+                                stroke-dasharray="31.84 458.25" stroke-dashoffset="-458.25"
+                                transform="rotate(-90 95.0 95.0)">
+                                <title>비활성: 178 (6.5%)</title>
+                            </circle><text x="95.0" y="93.0" class="donut-c1">2,740</text><text x="95.0" y="111.0"
+                                class="donut-c2">합계</text>
+                        </svg>
+                        <div class="dleg-list">
+                            <div class="dleg"><i style="background:#2F80ED"></i><span>활성 (검색
+                                    수행)</span><b>2,562</b><em>93.5%</em></div>
+                            <div class="dleg"><i style="background:#E2E8F0"></i><span>비활성</span><b>178</b><em>6.5%</em>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="ctitle">조직별 참여율</div>
+                    <div class="hbars">
+                        <div class="hb-row">
+                            <div class="hb-label" title="서남부">서남부</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:100.0%;background:#10B981"></div><span
+                                    class="hb-val">96%</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="수도권중부">수도권중부</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:98.9%;background:#10B981"></div><span
+                                    class="hb-val">95%</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="충청">충청</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:98.9%;background:#10B981"></div><span
+                                    class="hb-val">95%</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="강원">강원</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:98.5%;background:#10B981"></div><span
+                                    class="hb-val">95%</span>
+                            </div>
+                        </div>
+                        <div class="hb-row">
+                            <div class="hb-label" title="(미지정)">(미지정)</div>
+                            <div class="hb-track">
+                                <div class="hb-fill" style="width:74.9%;background:#10B981"></div><span
+                                    class="hb-val">72%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="insight"><span class="ins-ic">💡</span>
+                <div>활성 사용자 비율 <b>93.5%</b>. 조직 평균 참여율은 90%대로 높은 편이나, <b>미지정 조직(72.2%)</b> 구간은 조직정보 결측과 겹쳐 개선이 필요합니다.
+                </div>
+            </div>
+        </section>
+
+        <section id="perf">
+            <h2><span class="n">7</span>성과 / 효율 분석</h2>
+            <p class="sec-sub">행동 전환 퍼널 (진입 → 검색 → 클릭)</p>
+            <div class="grid2">
+                <div>
+                    <div class="ctitle">행동 전환 퍼널</div>
+                    <div class="funnel">
+                        <div class="fn-row">
+                            <div class="fn-bar" style="width:85.3%;background:#A50034"><span>진입 INIT</span><b>44,599</b>
+                            </div>
+                        </div><span class="fn-conv">↓ 117.2%</span>
+                        <div class="fn-row">
+                            <div class="fn-bar" style="width:100.0%;background:#8B5CF6"><span>검색
+                                    QUESTION</span><b>52,270</b></div>
+                        </div><span class="fn-conv">↓ 35.6%</span>
+                        <div class="fn-row">
+                            <div class="fn-bar" style="width:35.6%;background:#E67E22"><span>링크클릭
+                                    LINK_CLICK</span><b>18,633</b></div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="ctitle">핵심 효율 지표</div>
+                    <div class="orgdetail" style="grid-template-columns:1fr 1fr">
+                        <div class="od">
+                            <div class="v">63.2</div>
+                            <div class="l">1인당 사용량</div>
+                        </div>
+                        <div class="od">
+                            <div class="v">19.1</div>
+                            <div class="l">1인당 검색량</div>
+                        </div>
+                        <div class="od">
+                            <div class="v">35.6%</div>
+                            <div class="l">검색→클릭 전환율</div>
+                        </div>
+                        <div class="od">
+                            <div class="v">30.2%</div>
+                            <div class="l">검색 비율</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="insight"><span class="ins-ic">💡</span>
+                <div>검색 → 클릭 전환율 <b>35.6%</b>. 검색 대비 답변 내 링크 활용도가 3건 중 1건 수준으로, 답변 링크 노출·정확도 개선 시 전환 상승 여지가 있습니다.</div>
+            </div>
+        </section>
+
+        <section id="quality">
+            <h2><span class="n">8</span>데이터 품질 분석</h2>
+            <p class="sec-sub">주요 컬럼별 결측률 (낮을수록 양호)</p>
+            <div class="hbars">
+                <div class="hb-row">
+                    <div class="hb-label" title="메시지(정상 결측)">메시지(정상 결측)</div>
+                    <div class="hb-track">
+                        <div class="hb-fill" style="width:56.6%;background:#5A5A5A"></div><span
+                            class="hb-val">52%</span>
+                    </div>
+                </div>
+                <div class="hb-row">
+                    <div class="hb-label" title="질문유형">질문유형</div>
+                    <div class="hb-track">
+                        <div class="hb-fill" style="width:41.3%;background:#5A5A5A"></div><span
+                            class="hb-val">38%</span>
+                    </div>
+                </div>
+                <div class="hb-row">
+                    <div class="hb-label" title="제품군">제품군</div>
+                    <div class="hb-track">
+                        <div class="hb-fill" style="width:100.0%;background:#5A5A5A"></div><span
+                            class="hb-val">91%</span>
+                    </div>
+                </div>
+                <div class="hb-row">
+                    <div class="hb-label" title="담당">담당</div>
+                    <div class="hb-track">
+                        <div class="hb-fill" style="width:6.0%;background:#5A5A5A"></div><span class="hb-val">6%</span>
+                    </div>
+                </div>
+                <div class="hb-row">
+                    <div class="hb-label" title="조직(팀/지역)">조직(팀/지역)</div>
+                    <div class="hb-track">
+                        <div class="hb-fill" style="width:10.0%;background:#5A5A5A"></div><span class="hb-val">9%</span>
+                    </div>
+                </div>
+                <div class="hb-row">
+                    <div class="hb-label" title="센터">센터</div>
+                    <div class="hb-track">
+                        <div class="hb-fill" style="width:6.7%;background:#5A5A5A"></div><span class="hb-val">6%</span>
+                    </div>
+                </div>
+                <div class="hb-row">
+                    <div class="hb-label" title="직무">직무</div>
+                    <div class="hb-track">
+                        <div class="hb-fill" style="width:8.1%;background:#5A5A5A"></div><span class="hb-val">7%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="insight"><span class="ins-ic">💡</span>
+                <div>조직 정보(팀/지역) 결측 <b>9.1%</b>, 센터 6.1%, 담당 5.5%로 조직 매핑 정합성 보강이 필요합니다. 제품군은 91% 결측이나 이는 모델·증상 검색 특성상 정상
+                    범위이며, 메시지 결측(51.7%)은 INIT/클릭 등 텍스트가 없는 이벤트가 원인입니다.</div>
+            </div>
+        </section>
+
+        <section id="summary">
+            <h2>🎯 핵심 인사이트 &amp; 개선 포인트</h2>
+            <p class="sec-sub">KPI 기반 종합 요약 및 실행 과제</p>
+            <div
+                style="background:linear-gradient(135deg, var(--brand-light) 0%, rgba(255, 255, 255, 0.9) 100%);border:1px solid rgba(165, 0, 52, 0.15);border-left:4px solid var(--brand);border-radius:12px;padding:16px 18px;margin-bottom:18px;font-size:13.5px;line-height:1.7;color:var(--ink)">
+                <b>📌 3줄 요약</b><br>
+                ① 5월 한 달 <b>2,740명</b>이 <b>173,034건</b>을 활용, 1인당 <b>63.2건</b> · 검색비율 <b>30.2%</b>로 현장 활용도가 높음.<br>
+                ② 사용량은 <b>고객가치혁신한국수도권중부담당</b>가 최다이나 1인당 효율은 <b>고객가치혁신한국강원실(75.3건)</b>이 우수, 참여율은 대부분 90%대.<br>
+                ③ VOC는 <b>에러/오류·작동안됨·온도</b> 증상이 집중 → 관련 기술자료·FAQ 보강이 최우선.
+            </div>
+            <div class="ctitle">개선 포인트 Top 5</div>
+            <div class="imp">
+                <div class="imp-n">1</div>
+                <div><b>저활성 그룹 활성화</b>
+                    <p>라이트 사용자 1,365명(50%)에게 활용 가이드·우수사례 공유로 사용 습관화</p>
+                </div>
+            </div>
+            <div class="imp">
+                <div class="imp-n">2</div>
+                <div><b>미지정 조직 정합성</b>
+                    <p>조직정보 결측 9.1%(약 255명) — HR 마스터 연동으로 팀/지역 매핑 정비</p>
+                </div>
+            </div>
+            <div class="imp">
+                <div class="imp-n">3</div>
+                <div><b>전환율 개선</b>
+                    <p>검색→클릭 35.6% — 답변 내 관련 자료 링크 노출·랭킹 개선</p>
+                </div>
+            </div>
+            <div class="imp">
+                <div class="imp-n">4</div>
+                <div><b>VOC 기반 콘텐츠 보강</b>
+                    <p>다빈도 증상(에러/오류·작동안됨·온도) 중심 기술자료·FAQ 우선 확충</p>
+                </div>
+            </div>
+            <div class="imp">
+                <div class="imp-n">5</div>
+                <div><b>피크 대응</b>
+                    <p>오전 10시·수요일 집중 — 해당 시간대 응답 성능·자료 신선도 관리</p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            본 대시보드는 5월 챗봇 사용 로그 173,034건을 분석한 결과입니다 · 참여율은 데이터 내 등장 사용자 기준(전체 인력 로스터 미반영)이며, 개인 성과 평가 목적이 아닌 서비스 활용도
+            진단용입니다.
+        </footer>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // smooth active nav
+            var sec = [].slice.call(document.querySelectorAll('section[id]'));
+            var links = [].slice.call(document.querySelectorAll('nav.tabs a'));
+            function onScroll() {
+                var y = window.scrollY + 120, cur = null;
+                sec.forEach(function (s) { if (s.offsetTop <= y) cur = s.id; });
+                links.forEach(function (a) {
+                    a.style.color = ''; a.style.borderBottomColor = 'transparent';
+                    if (a.getAttribute('href') === '#' + cur) { a.style.color = 'var(--brand)'; a.style.borderBottomColor = 'var(--brand)'; }
+                });
+            }
+            window.addEventListener('scroll', onScroll); onScroll();
+            // org filter
+            var OD = { "고객가치혁신한국수도권중부담당": { "team": "고객가치혁신한국수도권중부담당", "users": 1180, "total": 73438, "q": 22357, "click": 7394, "perUser": 62.2, "perUserQ": 18.9, "partRate": 95.3 }, "고객가치혁신한국서남부담당": { "team": "고객가치혁신한국서남부담당", "users": 947, "total": 61256, "q": 18137, "click": 6541, "perUser": 64.7, "perUserQ": 19.2, "partRate": 96.4 }, "(미지정)": { "team": "(미지정)", "users": 255, "total": 15665, "q": 4954, "click": 2226, "perUser": 61.4, "perUserQ": 19.4, "partRate": 72.2 }, "고객가치혁신한국충청실": { "team": "고객가치혁신한국충청실", "users": 258, "total": 15140, "q": 4482, "click": 1583, "perUser": 58.7, "perUserQ": 17.4, "partRate": 95.3 }, "고객가치혁신한국강원실": { "team": "고객가치혁신한국강원실", "users": 100, "total": 7535, "q": 2340, "click": 889, "perUser": 75.3, "perUserQ": 23.4, "partRate": 95.0 } }; var sel = document.getElementById('orgSel');
+            function render(t) {
+                var o = OD[t]; if (!o) return;
+                document.getElementById('od_u').textContent = o.users.toLocaleString();
+                document.getElementById('od_t').textContent = o.total.toLocaleString();
+                document.getElementById('od_pu').textContent = o.perUser.toFixed(1);
+                document.getElementById('od_p').textContent = o.partRate.toFixed(1) + '%';
+            }
+            if (sel) { sel.addEventListener('change', function () { render(this.value); }); render(sel.value); }
+            // sortable tables
+            [].slice.call(document.querySelectorAll('table.sortable')).forEach(function (tb) {
+                tb.querySelectorAll('th').forEach(function (th, ci) {
+                    th.style.cursor = 'pointer';
+                    th.addEventListener('click', function () {
+                        var body = tb.tBodies[0]; var rows = [].slice.call(body.rows);
+                        var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+                        rows.sort(function (a, b) {
+                            var x = a.cells[ci].textContent.replace(/[^0-9.\-]/g, ''),
+                            y = b.cells[ci].textContent.replace(/[^0-9.\-]/g, '');
+                            var nx = parseFloat(x), ny = parseFloat(y);
+                            if (!isNaN(nx) && !isNaN(ny)) return asc ? nx - ny : ny - nx;
+                            return asc ? a.cells[ci].textContent.localeCompare(b.cells[ci].textContent)
+                                : b.cells[ci].textContent.localeCompare(a.cells[ci].textContent);
+                        });
+                        rows.forEach(function (r) { body.appendChild(r); });
+                    });
+                });
+            });
+
+            // Heatmap color converter (파란색 RGB -> LG Burgundy 계열 동적 매핑)
+            // 인라인 RGB 색상의 밝기를 계산하여 LG Burgundy(#A50034)의 농도로 변환
+            document.querySelectorAll('.heat-tbl td').forEach(function(td) {
+                var bg = window.getComputedStyle(td).backgroundColor;
+                if (bg && bg.indexOf('rgb') !== -1) {
+                    var rgb = bg.match(/\d+/g);
+                    if (rgb && rgb.length >= 3) {
+                        var r = parseInt(rgb[0]);
+                        var g = parseInt(rgb[1]);
+                        var b = parseInt(rgb[2]);
+                        
+                        // 기본 회색 배경(#f1f5f9)이 아닌 사용 활성화된 셀만 변경
+                        if (!(r === 241 && g === 245 && b === 249)) {
+                            var brightness = (r + g + b) / 3;
+                            // 연함(255)에서 진함(60)까지의 밝기 기반 농도 계산
+                            var ratio = (255 - brightness) / (255 - 60);
+                            if (ratio < 0.05) ratio = 0.05;
+                            if (ratio > 1) ratio = 1;
+                            
+                            // LG Burgundy (#A50034)의 RGB 성분인 (165, 0, 52) 기반으로 투명도 조절
+                            td.style.backgroundColor = 'rgba(165, 0, 52, ' + (ratio * 0.95).toFixed(2) + ')';
+                            td.style.color = ratio > 0.55 ? '#fff' : 'var(--ink)';
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
