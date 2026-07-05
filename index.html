@@ -1056,7 +1056,7 @@
                     <h1>기술 지원 챗봇 사용현황 대시보드</h1>
                     <div class="subtitle">고객가치혁신 CC&amp;S · 현장 활용 로그 분석 · 누가 / 언제 / 얼마나 / 무엇을 / 어떻게</div>
                     <div class="meta-chips">
-                        <span class="chip-badge">🗂️ 173,034 이벤트</span>
+                        <span class="chip-badge">🗂️ 173,076 이벤트</span>
                         <span class="chip-badge">👥 2,740 사용자</span>
                         <span class="chip-badge">🏢 4 조직 · 109 센터</span>
                     </div>
@@ -1090,19 +1090,19 @@
             </div>
             <div class="kpi primary-kpi">
                 <div class="kpi-ic">⚡</div>
-                <div class="kpi-v">173,034</div>
+                <div class="kpi-v">173,076</div>
                 <div class="kpi-l">총 이벤트 수</div>
                 <div class="kpi-s">2026-05-01 ~ 2026-05-31</div>
             </div>
             <div class="kpi" style="--kc:#7A0026">
                 <div class="kpi-ic">🔎</div>
-                <div class="kpi-v">52,270</div>
+                <div class="kpi-v">52,285</div>
                 <div class="kpi-l">총 검색 수 (QUESTION)</div>
                 <div class="kpi-s">전체의 30.2%</div>
             </div>
             <div class="kpi" style="--kc:#5A5A5A">
                 <div class="kpi-ic">🖱️</div>
-                <div class="kpi-v">18,633</div>
+                <div class="kpi-v">18,635</div>
                 <div class="kpi-l">링크 클릭 수</div>
                 <div class="kpi-s">답변 내 링크 클릭</div>
             </div>
@@ -1139,6 +1139,7 @@
                 <div>
                     <div class="ctitle">상위 사용자 Top 10 (총 사용량)</div>
                     <div class="hbars">
+                        <!-- TOP_10_USERS_START -->
                         <div class="hb-row">
                             <div class="hb-label" title="정용우">정용우</div>
                             <div class="hb-track">
@@ -1177,8 +1178,8 @@
                         <div class="hb-row">
                             <div class="hb-label" title="노영호">노영호</div>
                             <div class="hb-track">
-                                <div class="hb-fill" style="width:23.9%;background:var(--brand)"></div><span
-                                    class="hb-val">598<span class="hb-sub"> (검색 194)</span></span>
+                                <div class="hb-fill" style="width:24.0%;background:var(--brand)"></div><span
+                                    class="hb-val">601<span class="hb-sub"> (검색 195)</span></span>
                             </div>
                         </div>
                         <div class="hb-row">
@@ -1209,6 +1210,7 @@
                                     class="hb-val">377<span class="hb-sub"> (검색 115)</span></span>
                             </div>
                         </div>
+                        <!-- TOP_10_USERS_END -->
                     </div>
                 </div>
                 <div>
@@ -2940,7 +2942,7 @@
             }
             window.addEventListener('scroll', onScroll); onScroll();
             // org filter
-            var OD = { "고객가치혁신한국수도권중부담당": { "team": "고객가치혁신한국수도권중부담당", "users": 1180, "total": 73438, "q": 22357, "click": 7394, "perUser": 62.2, "perUserQ": 18.9, "partRate": 95.3 }, "고객가치혁신한국서남부담당": { "team": "고객가치혁신한국서남부담당", "users": 947, "total": 61256, "q": 18137, "click": 6541, "perUser": 64.7, "perUserQ": 19.2, "partRate": 96.4 }, "(미지정)": { "team": "(미지정)", "users": 255, "total": 15665, "q": 4954, "click": 2226, "perUser": 61.4, "perUserQ": 19.4, "partRate": 72.2 }, "고객가치혁신한국충청실": { "team": "고객가치혁신한국충청실", "users": 258, "total": 15140, "q": 4482, "click": 1583, "perUser": 58.7, "perUserQ": 17.4, "partRate": 95.3 }, "고객가치혁신한국강원실": { "team": "고객가치혁신한국강원실", "users": 100, "total": 7535, "q": 2340, "click": 889, "perUser": 75.3, "perUserQ": 23.4, "partRate": 95.0 } }; var sel = document.getElementById('orgSel');
+            var OD = {"고객가치혁신한국수도권중부담당": {"team": "고객가치혁신한국수도권중부담당", "users": 1180, "total": 73449, "q": 22360, "click": 7394, "perUser": 62.2, "perUserQ": 18.9, "partRate": 95.3}, "고객가치혁신한국서남부담당": {"team": "고객가치혁신한국서남부담당", "users": 947, "total": 61268, "q": 18141, "click": 6543, "perUser": 64.7, "perUserQ": 19.2, "partRate": 96.4}, "고객가치혁신한국충청실": {"team": "고객가치혁신한국충청실", "users": 258, "total": 15147, "q": 4485, "click": 1583, "perUser": 58.7, "perUserQ": 17.4, "partRate": 95.6}, "고객가치혁신한국강원실": {"team": "고객가치혁신한국강원실", "users": 100, "total": 7535, "q": 2340, "click": 889, "perUser": 75.3, "perUserQ": 23.4, "partRate": 95.2}, "(미지정)": {"team": "(미지정)", "users": 0, "total": 0, "q": 0, "click": 0, "perUser": 0.0, "perUserQ": 0.0, "partRate": 0.0}}; var sel = document.getElementById('orgSel');
             function render(t) {
                 var o = OD[t]; if (!o) return;
                 document.getElementById('od_u').textContent = o.users.toLocaleString();
